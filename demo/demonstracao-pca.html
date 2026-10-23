@@ -1,0 +1,702 @@
+<title>Demonstração PCA</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: processo administrativo em telas — trilho de etapas à esquerda, folha de trabalho à direita; cada campo traz inciso, tipo e procedência. */
+:root{
+  --bg:#eef1f4; --surface:#ffffff; --sunken:#f6f8fa; --ink:#17212b; --muted:#56636f; --line:#d6dde4;
+  --accent:#1f4f7a; --accent-ink:#ffffff; --accent-soft:#e3edf6;
+  --t-fixo:#56677a; --t-fixo-bg:#e9edf1;
+  --t-herd:#0b6b62; --t-herd-bg:#dff2ef;
+  --t-user:#9a4a06; --t-user-bg:#fbeedd;
+  --t-busca:#5b2bb5; --t-busca-bg:#ece5fa;
+  --ok:#1d7a3e; --ok-bg:#e1f3e7; --warn:#9a5b00; --warn-bg:#fff1d6; --bad:#b42318; --bad-bg:#fde7e4;
+  --r1:#2f7d4f; --r2:#7a8f1f; --r3:#b77a00; --r4:#c2410c; --r5:#b42318;
+  --f-ui:"Public Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-doc:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11161c; --surface:#19212a; --sunken:#141b22; --ink:#e6ebf0; --muted:#9aa7b4; --line:#2c3743;
+  --accent:#7fb0dc; --accent-ink:#0d1620; --accent-soft:#1e3347;
+  --t-fixo:#a9b6c4; --t-fixo-bg:#26313c; --t-herd:#5fd0c2; --t-herd-bg:#123631;
+  --t-user:#f0b066; --t-user-bg:#3a2a14; --t-busca:#b9a1f2; --t-busca-bg:#2b2140;
+  --ok:#6fd393; --ok-bg:#16301f; --warn:#f2c060; --warn-bg:#352a11; --bad:#ff8b7e; --bad-bg:#3a1915;
+  --r1:#6fd393; --r2:#c7d75c; --r3:#f2c060; --r4:#ff9f5e; --r5:#ff8b7e;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11161c; --surface:#19212a; --sunken:#141b22; --ink:#e6ebf0; --muted:#9aa7b4; --line:#2c3743;
+  --accent:#7fb0dc; --accent-ink:#0d1620; --accent-soft:#1e3347;
+  --t-fixo:#a9b6c4; --t-fixo-bg:#26313c; --t-herd:#5fd0c2; --t-herd-bg:#123631;
+  --t-user:#f0b066; --t-user-bg:#3a2a14; --t-busca:#b9a1f2; --t-busca-bg:#2b2140;
+  --ok:#6fd393; --ok-bg:#16301f; --warn:#f2c060; --warn-bg:#352a11; --bad:#ff8b7e; --bad-bg:#3a1915;
+  --r1:#6fd393; --r2:#c7d75c; --r3:#f2c060; --r4:#ff9f5e; --r5:#ff8b7e;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+h1,h2,h3{text-wrap:balance;line-height:1.25;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{max-width:1240px;margin:0 auto;padding-block:10px;display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify-content:space-between}
+.brand{display:flex;flex-direction:column}
+.brand b{font-size:15px;letter-spacing:.01em}
+.brand span{font-size:12.5px;color:var(--muted)}
+.demo-flag{font-size:12.5px;background:var(--warn-bg);color:var(--warn);border:1px solid color-mix(in srgb,var(--warn) 35%,transparent);padding:4px 10px;border-radius:999px;font-weight:500}
+.shell{max-width:1240px;margin:0 auto;padding-block:20px 48px;display:grid;grid-template-columns:230px minmax(0,1fr);gap:24px;align-items:start}
+nav.steps{position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px);display:flex;flex-direction:column;gap:2px}
+.step{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:center;text-align:left;background:none;border:1px solid transparent;border-radius:var(--radius);padding:8px 10px;cursor:pointer;color:var(--muted)}
+.step:hover{background:var(--surface)}
+.step[aria-current="step"]{background:var(--surface);border-color:var(--line);color:var(--ink);font-weight:600}
+.step .n{font-family:var(--f-mono);font-size:12px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--sunken);border:1px solid var(--line)}
+.step[aria-current="step"] .n{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.dot.ok{background:var(--ok)} .dot.warn{background:var(--warn)} .dot.bad{background:var(--bad)}
+main{min-width:0}
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:28px clamp(16px,3vw,32px)}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.sheet h2{font-size:24px;margin-top:4px}
+.lede{color:var(--muted);max-width:68ch;margin:8px 0 0}
+.stack{display:flex;flex-direction:column;gap:14px}
+.sec{margin-top:26px;display:flex;flex-direction:column;gap:12px}
+.sec>h3{font-size:16px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.field{border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--surface);min-width:0}
+.field.pend{border-color:color-mix(in srgb,var(--bad) 45%,var(--line));background:color-mix(in srgb,var(--bad-bg) 45%,var(--surface))}
+.field.dim{opacity:.62}
+.fhead{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline}
+.ref{font-family:var(--f-mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.lbl{font-weight:600}
+.types{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap}
+.ty{font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.04em;padding:2px 7px;border-radius:4px}
+.ty.FIXO{color:var(--t-fixo);background:var(--t-fixo-bg)}
+.ty.HERDADO{color:var(--t-herd);background:var(--t-herd-bg)}
+.ty.USUARIO{color:var(--t-user);background:var(--t-user-bg)}
+.ty.BUSCA{color:var(--t-busca);background:var(--t-busca-bg)}
+.fval{font-family:var(--f-doc);font-size:16px;line-height:1.55;max-width:72ch}
+.fval.ui{font-family:var(--f-ui);font-size:15px}
+.prov{font-size:12.5px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;color:var(--muted)}
+.pv{font-weight:600;font-size:11.5px;letter-spacing:.03em;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid transparent}
+.pv.real{color:var(--ok);background:var(--ok-bg)}
+.pv.sim{color:var(--warn);background:var(--warn-bg);border-color:color-mix(in srgb,var(--warn) 40%,transparent)}
+.pv.ilus{color:var(--t-busca);background:transparent;border:1px dashed var(--t-busca)}
+.pv.pend{color:var(--bad);background:var(--bad-bg)}
+.pv.user{color:var(--t-user);background:var(--t-user-bg)}
+.pv.parc{color:var(--warn);background:transparent;border:1px solid var(--warn)}
+.note{font-size:13.5px;color:var(--muted);max-width:72ch}
+.callout{border-radius:var(--radius);padding:12px 14px;font-size:14px;display:flex;gap:10px;align-items:flex-start}
+.callout.warn{background:var(--warn-bg);color:var(--ink);border:1px solid color-mix(in srgb,var(--warn) 35%,transparent)}
+.callout.bad{background:var(--bad-bg);border:1px solid color-mix(in srgb,var(--bad) 35%,transparent)}
+.callout.ok{background:var(--ok-bg);border:1px solid color-mix(in srgb,var(--ok) 35%,transparent)}
+.callout.info{background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent)}
+.callout b{white-space:nowrap}
+textarea,input[type=text]{width:100%;border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:var(--sunken);font-family:var(--f-ui);font-size:14.5px}
+textarea{min-height:64px;resize:vertical}
+select{border:1px solid var(--line);border-radius:6px;padding:5px 8px;background:var(--sunken);font-size:14px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:8px 14px;font-weight:600;font-size:14px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.btn:hover{background:var(--sunken)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 45%,var(--line))}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.pager{display:flex;justify-content:space-between;gap:10px;margin-top:28px;padding-top:16px;border-top:1px solid var(--line);flex-wrap:wrap}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.legend>div{border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.phases{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.ph{border:1px solid var(--line);border-radius:6px;padding:8px;font-size:12.5px;display:flex;flex-direction:column;gap:4px;background:var(--sunken)}
+.ph .k{font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+.ph.demo{border-color:var(--accent);background:var(--accent-soft)}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-weight:600}
+.flow span.doc{border:1px solid var(--line);border-radius:6px;padding:6px 10px;background:var(--sunken)}
+.flow span.arr{color:var(--muted)}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius)}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);background:var(--sunken);font-weight:600}
+tr:last-child td{border-bottom:none}
+td.num,th.num{text-align:right;white-space:nowrap}
+tr.off td{color:var(--muted);text-decoration:line-through}
+tr.off td:first-child{text-decoration:none}
+.cascade{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cas{border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;display:flex;flex-direction:column;gap:4px;font-size:13.5px}
+.cas .k{font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+.cas.hit{border-color:var(--t-busca);background:var(--t-busca-bg)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.kpi{border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;background:var(--sunken)}
+.kpi .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.kpi .v{font-family:var(--f-mono);font-size:20px;font-weight:500;margin-top:2px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{border:none;background:var(--surface);padding:6px 12px;font-size:13.5px;cursor:pointer;font-weight:500}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.vcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.vc{border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.vc h4{margin:0;font-size:15px}
+.manual{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.manual div{background:var(--bad-bg);border-radius:6px;padding:6px 8px;font-size:13px}
+.manual div small{display:block;color:var(--muted);font-family:var(--f-mono);font-size:11px}
+.pca{background:var(--ok-bg);border-radius:6px;padding:8px 10px;font-size:13.5px;display:flex;flex-direction:column;gap:6px}
+.pca .mirror{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.risk-phase{display:flex;flex-direction:column;gap:8px}
+.risk-phase h4{margin:6px 0 0;font-size:15px}
+.grau{font-family:var(--f-mono);font-weight:500;padding:2px 8px;border-radius:999px;font-size:12.5px;white-space:nowrap;border:1px solid currentColor}
+.g1{color:var(--r1)} .g2{color:var(--r2)} .g3{color:var(--r3)} .g4{color:var(--r4)} .g5{color:var(--r5)}
+.scale{display:flex;flex-wrap:wrap;gap:6px;font-size:12.5px}
+.doclist{display:flex;flex-direction:column;gap:10px}
+.docrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px}
+.docrow .t{font-weight:600}
+.status-line{font-size:13.5px;color:var(--muted)}
+.log{font-family:var(--f-mono);font-size:12.5px;background:var(--sunken);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+@media (max-width:860px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  nav.steps{position:static;flex-direction:row;overflow-x:auto;gap:4px;padding-bottom:4px}
+  .step{grid-template-columns:22px auto;white-space:nowrap}
+  .step .dot{display:none}
+  .phases{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cascade{grid-template-columns:minmax(0,1fr)}
+  .manual{grid-template-columns:minmax(0,1fr)}
+  .types{margin-left:0}
+}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:in .18s ease-out}@keyframes in{from{transform:translateY(4px)}to{transform:none}}}
+</style>
+
+<header class="top wrap">
+  <div class="top-in">
+    <div class="brand"><b>PCA · Planejamento de Contratações Assistido</b><span>TRT da 17ª Região · SIMS · Versão 1: aquisição de materiais</span></div>
+    <span class="demo-flag">Demonstração com dados reais anonimizados · sem IA ao vivo</span>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="shell">
+    <nav class="steps" id="steps" aria-label="Etapas da demonstração"></nav>
+    <main id="main" aria-live="polite"></main>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+<script>
+(function(){
+"use strict";
+
+/* ---------- utilidades ---------- */
+const BRL = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
+const NUM = new Intl.NumberFormat('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const median = a => { const s=[...a].sort((x,y)=>x-y); const m=Math.floor(s.length/2); return s.length? (s.length%2? s[m] : (s[m-1]+s[m])/2) : 0; };
+const mean = a => a.length? a.reduce((x,y)=>x+y,0)/a.length : 0;
+const r2 = n => Math.round(n*100)/100;
+const types = list => list.map(t=>`<span class="ty ${t.replace('Á','A')}">${t}</span>`).join('');
+const PV = {real:['real','Dado real'],sim:['sim','Simulado'],ilus:['ilus','Ilustrativo'],pend:['pend','Pendente'],parc:['parc','Parcial'],user:['user','Informado agora']};
+const pv = (k,txt) => `<span class="pv ${PV[k][0]}">${PV[k][1]}</span>${txt?`<span>${esc(txt)}</span>`:''}`;
+const nowStr = () => new Date().toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
+
+/* ---------- dados do caso (processo real de 2025, anonimizado) ---------- */
+const CASO = {
+  objetoDFD: 'Substituição de todas as baterias e ventiladores dos nobreaks de 40 kVA e 60 kVA que alimentam o Datacenter e os sistemas de automação do Edifício Sede, por peças de mesma especificação técnica, conforme recomendação do fabricante.',
+  objetoETP: 'Aquisição de baterias para os nobreaks de 40 kVA e 60 kVA que alimentam o Datacenter e os sistemas de automação do Edifício Sede.',
+  necessidade: 'Os nobreaks do Datacenter e da automação do Edifício Sede operam desde 2020, e o fabricante recomenda substituir as baterias após 5 anos. Com a vida útil comprometida, uma queda de energia pode interromper sistemas críticos e pôr em risco dados e equipamentos.'
+};
+const ITENS = [
+  {id:'A',desc:'Bateria VRLA 12V 580W (ref. CSB 12580F2)',qtd:256,
+   q:[{v:283.73,f:'Fabricante dos nobreaks',d:'28/01/2025'},{v:205.00,f:'atera.com.br',d:'09/05/2025'},{v:197.31,f:'JVCI Alarmes',d:'09/05/2025'},{v:259.00,f:'Loja das Baterias',d:'09/05/2025'}]},
+  {id:'B',desc:'Bateria HRL 12V 200W (ref. CSB HRL 12200W)',qtd:36,
+   q:[{v:1791.88,f:'Fabricante dos nobreaks',d:'28/01/2025'},{v:1426.50,f:'netcomputadores',d:'12/05/2025'},{v:1224.90,f:'bateriaautomotiva',d:'12/05/2025'},{v:1100.00,f:'senabaterias',d:'12/05/2025'}]}
+];
+const MIN_COTACOES = 5;
+
+const SIM_DFD = {
+  III:'292 baterias: 36 unidades de 12V 200W (nobreak de 60 kVA) e 256 unidades de 12V 580W (2 nobreaks de 40 kVA, com 128 cada).',
+  IV:'Cerca de R$ 110 mil, por consulta simplificada de mercado.',
+  VII:'Não depende de outro DFD. Relaciona-se ao contrato vigente de manutenção dos nobreaks, que fará a instalação (tratado no ETP, inciso XI).'
+};
+
+/* ---------- estado ---------- */
+const S = {
+  screen:0,
+  dfd:{III:'',IV:'',VII:''}, dfdSim:{}, dfdDone:false,
+  mode:'completo',
+  on:{A:[true,true,true,true],B:[true,true,true,true]},
+  decision:null, decisionNote:'', decisionAt:'',
+  params:{lances:'0,5% sobre o lance',validade:'60 dias',reajuste:'Não se aplica (vigência de 150 dias)',marco:'Recebimento da Nota de Empenho'},
+  objJust:'',
+  risks:[
+    {fase:'Planejamento',nome:'Divergências textuais entre documentos base',origem:'Modelo EP 3.01',causa:'Ausência de controle e revisão; campos redigidos de novo em cada documento.',p:0.5,i:4,med:'Herança de campos entre DFD, ETP e TR; validação cruzada antes do checkpoint.',rp:0.1,ri:4,resp:'Equipe de planejamento',ilus:false},
+    {fase:'Planejamento',nome:'Estimativa de preços incorreta',origem:'Modelo EP 3.01',causa:'Poucas cotações; bases oficiais sem registros para o item.',p:0.5,i:4,med:'Cascata PNCP → bancos de preços → lojas, com mínimo de 5 cotações e mediana.',rp:0.2,ri:2,resp:'Equipe de planejamento',ilus:false},
+    {fase:'Licitação',nome:'Baterias ofertadas incompatíveis com os nobreaks instalados',origem:'Ilustrativo',causa:'Especificação genérica, sem dimensões e padrão de conexão.',p:0.3,i:5,med:'Especificação extraída de catálogo do fabricante; exigência de datasheet na proposta.',rp:0.1,ri:5,resp:'Setor de compras',ilus:true},
+    {fase:'Licitação',nome:'Licitação deserta ou fracassada',origem:'Ilustrativo',causa:'Mercado restrito para baterias com especificação particular.',p:0.4,i:4,med:'Pesquisa ampla de fornecedores; lote único; prazo de entrega compatível com importação.',rp:0.2,ri:4,resp:'Setor de compras',ilus:true},
+    {fase:'Gestão do contrato',nome:'Atraso na entrega',origem:'Ilustrativo',causa:'Importação de componentes; trâmites alfandegários.',p:0.4,i:4,med:'Prazo de 60 dias; preposto designado; comunicação imediata de ocorrências.',rp:0.2,ri:3,resp:'Fiscalização',ilus:true},
+    {fase:'Gestão do contrato',nome:'Entrega de baterias recondicionadas ou fora da validade',origem:'Ilustrativo',causa:'Fornecedor sem controle de origem.',p:0.2,i:5,med:'Exigência de produto novo e selado, nota fiscal e garantia; aferição em até 10 dias.',rp:0.1,ri:4,resp:'Fiscalização',ilus:true}
+  ]
+};
+
+/* ---------- derivados ---------- */
+function precoItem(it){
+  const vals = it.q.filter((_,k)=>S.on[it.id][k]).map(x=>x.v);
+  return {n:vals.length, media:r2(mean(vals)), mediana:r2(median(vals))};
+}
+function totalRef(){ return r2(ITENS.reduce((s,it)=>s+precoItem(it).mediana*it.qtd,0)); }
+function minCot(){ return Math.min(...ITENS.map(it=>precoItem(it).n)); }
+function dfdMissing(){ return ['III','IV','VII'].filter(k=>!S.dfd[k].trim()); }
+const ETP_REQ_SIMPL = ['I','IV','VI','VIII','XIII'];
+function etpPend(){
+  const p = ['V','IX','X'];
+  return S.mode==='completo' ? p : p.filter(k=>ETP_REQ_SIMPL.includes(k));
+}
+function grau(v){
+  if(v<1) return ['g1','Insignificante'];
+  if(v<2) return ['g2','Leve'];
+  if(v<3) return ['g3','Médio'];
+  if(v<4) return ['g4','Alto'];
+  return ['g5','Muito alto'];
+}
+
+/* ---------- telas ---------- */
+const SCREENS = [
+  {k:'abertura',t:'Abertura'},
+  {k:'dfd',t:'DFD'},
+  {k:'etp1',t:'ETP · I a V'},
+  {k:'etp2',t:'ETP · VI a XIII'},
+  {k:'check',t:'Checkpoint'},
+  {k:'tr',t:'Termo de Referência'},
+  {k:'mapa',t:'Mapa de Risco'},
+  {k:'saida',t:'Saída'}
+];
+function stepStatus(k){
+  if(k==='dfd') return S.dfdDone?'ok':(dfdMissing().length?'bad':'warn');
+  if(k==='etp1'||k==='etp2') return etpPend().length?'warn':'ok';
+  if(k==='check') return S.decision==='aprovado'?'ok':(S.decision==='devolvido'?'bad':'');
+  if(k==='tr') return S.decision==='aprovado'?'ok':'';
+  if(k==='etp2' && minCot()<MIN_COTACOES) return 'warn';
+  return '';
+}
+function renderSteps(){
+  document.getElementById('steps').innerHTML = SCREENS.map((s,i)=>
+    `<button class="step" data-go="${i}" ${i===S.screen?'aria-current="step"':''}><span class="n">${i}</span><span>${s.t}</span><span class="dot ${stepStatus(s.k)}"></span></button>`).join('');
+}
+function field(o){
+  const cls = ['field']; if(o.pend) cls.push('pend'); if(o.dim) cls.push('dim');
+  return `<div class="${cls.join(' ')}" ${o.id?`id="${o.id}"`:''}>
+    <div class="fhead"><span class="ref">${esc(o.ref)}</span><span class="lbl">${esc(o.lbl)}</span><span class="types">${types(o.ty)}</span></div>
+    <div class="fval ${o.ui?'ui':''}">${o.val}</div>
+    <div class="prov">${o.prov}</div>
+  </div>`;
+}
+function pager(){
+  const i=S.screen, prev=SCREENS[i-1], next=SCREENS[i+1];
+  return `<div class="pager">${prev?`<button class="btn" data-go="${i-1}">← ${prev.t}</button>`:'<span></span>'}${next?`<button class="btn primary" data-go="${i+1}">${next.t} →</button>`:''}</div>`;
+}
+
+function vAbertura(){
+  return `<div class="sheet">
+  <div class="eyebrow">Caso demonstrado · aquisição de material · 2025</div>
+  <h2>Baterias para os nobreaks do Datacenter e da automação predial</h2>
+  <p class="lede">Esta página percorre os quatro documentos do planejamento de uma contratação real do Tribunal, concluída em 2025. Os valores, quantidades, prazos e datas são do processo. Nomes de servidores e o número do processo foram omitidos.</p>
+
+  <div class="sec"><h3>O fluxo</h3>
+    <div class="flow"><span class="doc">DFD</span><span class="arr">→</span><span class="doc">ETP</span><span class="arr">→</span><span class="doc">Checkpoint humano</span><span class="arr">→</span><span class="doc">TR</span><span class="arr">→</span><span class="doc">Mapa de Risco</span></div>
+    <p class="note">Cada documento herda os campos do anterior. Um dado é digitado uma vez e reaparece igual nos documentos seguintes.</p>
+  </div>
+
+  <div class="sec"><h3>De onde vem cada campo</h3>
+    <div class="legend">
+      <div>${types(['FIXO'])}<span>Texto institucional ou base legal verificada. Não é redigido a cada processo.</span></div>
+      <div>${types(['HERDADO'])}<span>Vem de um documento anterior do mesmo processo.</span></div>
+      <div>${types(['USUÁRIO'])}<span>Decisão ou informação do servidor responsável.</span></div>
+      <div>${types(['BUSCA'])}<span>Resultado de pesquisa externa, sempre com fonte e data.</span></div>
+    </div>
+  </div>
+
+  <div class="sec"><h3>Selos de procedência nesta demonstração</h3>
+    <div class="legend">
+      <div><span>${pv('real')}</span><span>Extraído do processo real de 2025.</span></div>
+      <div><span>${pv('sim')}</span><span>Não existe no processo real; preenchido para mostrar o funcionamento.</span></div>
+      <div><span>${pv('ilus')}</span><span>Exemplo construído sobre um modelo real do Tribunal.</span></div>
+      <div><span>${pv('pend')}</span><span>Exigido pela norma e ausente no processo real.</span></div>
+    </div>
+    <div class="callout info"><b>Sem IA ao vivo.</b><span>As telas de BUSCA mostram o resultado da pesquisa feita no processo real. A busca automática com citação de fontes é objeto das Fases 3 e 4.</span></div>
+  </div>
+
+  <div class="sec"><h3>Roteiro do projeto</h3>
+    <div class="phases">
+      ${[['0','Validação pelo patrocinador'],['1','Padronização e mapeamento de campos'],['2','Arquitetura e modelo de dados'],['3','Cascata de pesquisa de preços'],['4','Protótipos por documento'],['5','Saída .docx editável'],['6','Validação de ponta a ponta']]
+        .map(([k,t])=>`<div class="ph ${k==='4'||k==='5'?'demo':''}"><span class="k">Fase ${k}</span><span>${t}</span></div>`).join('')}
+    </div>
+    <p class="note">As telas a seguir antecipam as Fases 4 e 5 (destacadas). A Fase 0 é obrigatória: nada é construído sem a validação do patrocinador.</p>
+  </div>
+  ${pager()}</div>`;
+}
+
+function vDFD(){
+  const miss = dfdMissing();
+  const pendField = (k,ref,lbl)=>{
+    const filled = S.dfd[k].trim();
+    const prov = filled ? (S.dfdSim[k] && S.dfd[k]===SIM_DFD[k] ? pv('sim','Ausente no DFD real; preenchido para a demonstração') : pv('user','Digitado nesta sessão')) : pv('pend','Ausente no DFD real; o PCA não conclui o DFD sem este inciso');
+    return `<div class="field ${filled?'':'pend'}" id="f-${k}">
+      <div class="fhead"><span class="ref">${ref}</span><span class="lbl">${lbl}</span><span class="types">${types(['USUÁRIO'])}</span></div>
+      <textarea id="dfd-${k}" data-dfd="${k}" aria-label="${esc(lbl)}" placeholder="Campo obrigatório">${esc(S.dfd[k])}</textarea>
+      <div class="prov" id="p-${k}">${prov}</div></div>`;
+  };
+  return `<div class="sheet">
+  <div class="eyebrow">Documento 1 de 4 · Decreto nº 10.947/2022, art. 8º</div>
+  <h2>Documento de Formalização da Demanda</h2>
+  <p class="lede">O DFD tem oito informações obrigatórias. O DFD real trouxe cinco. Os três incisos ausentes ficam em vermelho e impedem a conclusão.</p>
+  <div class="sec">
+  ${field({ref:'art. 8º, I',lbl:'Justificativa da necessidade',ty:['USUÁRIO'],val:esc(CASO.necessidade),prov:pv('real','DFD, item 1')})}
+  ${field({ref:'art. 8º, II',lbl:'Descrição sucinta do objeto',ty:['USUÁRIO'],val:esc(CASO.objetoDFD),prov:pv('real','DFD, item 1(3)')})}
+  ${pendField('III','art. 8º, III','Quantidade a ser contratada')}
+  ${pendField('IV','art. 8º, IV','Estimativa preliminar do valor')}
+  ${field({ref:'art. 8º, V',lbl:'Data pretendida para a conclusão',ty:['USUÁRIO'],val:'Julho de 2025',prov:pv('real','DFD, item 2')})}
+  ${field({ref:'art. 8º, VI',lbl:'Grau de prioridade',ty:['USUÁRIO'],val:'<b>Alto.</b> Fim da vida útil recomendada pelo fabricante, em equipamentos que mantêm o funcionamento do edifício e a prestação jurisdicional.',prov:pv('real','DFD, item 3')})}
+  ${pendField('VII','art. 8º, VII','Vinculação ou dependência com outro DFD')}
+  ${field({ref:'art. 8º, VIII',lbl:'Área requisitante e responsável',ty:['HERDADO'],val:'Coordenadoria de Projetos da SIMS · [responsável técnico indicado]',prov:pv('real','DFD, item 4 · nome omitido')})}
+  ${field({ref:'Declaração',lbl:'Ausência de sobreposição de objetos',ty:['FIXO'],val:'Atesto ter sido verificada a lista de projetos cadastrados nas demais coordenadorias da SIMS, sem incompatibilidade ou sobreposição com o objeto pretendido.',prov:pv('real','DFD, item 5')})}
+  </div>
+  <div class="sec">
+    <div id="dfd-status"></div>
+    <div class="row">
+      <button class="btn" id="dfd-sim">Preencher pendências para a demonstração</button>
+      <button class="btn primary" id="dfd-done">Concluir DFD</button>
+    </div>
+  </div>
+  ${pager()}</div>`;
+}
+function updDFD(){
+  const miss = dfdMissing();
+  const st = document.getElementById('dfd-status'); if(!st) return;
+  st.innerHTML = S.dfdDone
+    ? `<div class="callout ok"><b>DFD concluído.</b><span>Os oito incisos estão preenchidos. Os campos seguem para o ETP.</span></div>`
+    : miss.length
+      ? `<div class="callout bad"><b>${miss.length} ${miss.length>1?'incisos pendentes':'inciso pendente'}:</b><span>${miss.map(k=>'art. 8º, '+k).join(' · ')}. O DFD só é concluído com todos os incisos.</span></div>`
+      : `<div class="callout warn"><b>Pronto para concluir.</b><span>Os oito incisos estão preenchidos.</span></div>`;
+  const b = document.getElementById('dfd-done'); if(b){ b.disabled = miss.length>0 || S.dfdDone; b.textContent = S.dfdDone?'DFD concluído':'Concluir DFD'; }
+  ['III','IV','VII'].forEach(k=>{
+    const f=document.getElementById('f-'+k), p=document.getElementById('p-'+k); if(!f||!p) return;
+    const filled=S.dfd[k].trim();
+    f.classList.toggle('pend',!filled);
+    p.innerHTML = filled ? (S.dfdSim[k] && S.dfd[k]===SIM_DFD[k] ? pv('sim','Ausente no DFD real; preenchido para a demonstração') : pv('user','Digitado nesta sessão')) : pv('pend','Ausente no DFD real; o PCA não conclui o DFD sem este inciso');
+  });
+  renderSteps();
+}
+
+function modeSwitch(){
+  return `<div class="row"><span class="note">Modo do ETP:</span><span class="seg" role="group" aria-label="Modo do ETP">
+    <button data-mode="completo" aria-pressed="${S.mode==='completo'}">Completo (13 incisos)</button>
+    <button data-mode="simplificado" aria-pressed="${S.mode==='simplificado'}">Simplificado (§2º)</button></span></div>`;
+}
+function etpField(o){
+  const required = ETP_REQ_SIMPL.includes(o.inc);
+  if(S.mode==='simplificado' && !required){
+    return field({ref:'art. 18, §1º, '+o.inc,lbl:o.lbl,ty:o.ty,val:'<span class="note">Dispensável no modo simplificado, com justificativa (art. 18, §2º).</span>',ui:true,prov:o.prov,dim:true});
+  }
+  return field({ref:'art. 18, §1º, '+o.inc,lbl:o.lbl,ty:o.ty,val:o.val,prov:o.prov,pend:o.pend,ui:o.ui});
+}
+function etpStatus(){
+  const p = etpPend();
+  return p.length
+    ? `<div class="callout warn"><b>${p.length} ${p.length>1?'incisos pendentes':'inciso pendente'} no modo ${S.mode}:</b><span>${p.map(k=>'inciso '+k).join(' · ')}. No modo simplificado, o ETP real atende o mínimo legal (I, IV, VI, VIII e XIII).</span></div>`
+    : `<div class="callout ok"><b>Mínimo legal atendido.</b><span>Os incisos I, IV, VI, VIII e XIII estão presentes. Os demais exigem justificativa de dispensa.</span></div>`;
+}
+function vETP1(){
+  return `<div class="sheet">
+  <div class="eyebrow">Documento 2 de 4 · Lei nº 14.133/2021, art. 18, §1º</div>
+  <h2>Estudo Técnico Preliminar · incisos I a V</h2>
+  <p class="lede">O ETP segue a ordem dos 13 incisos da lei. O modo simplificado exige ao menos os incisos I, IV, VI, VIII e XIII.</p>
+  <div class="sec">${modeSwitch()}${etpStatus()}</div>
+  <div class="sec">
+  <div class="callout warn"><b>Divergência herdada.</b><span>O objeto do DFD inclui <b>ventiladores</b>; o ETP real trata só de baterias e não registra o motivo. No PCA, reduzir o objeto herdado exige justificativa. Veja o item 1 da validação cruzada, na tela do TR.</span></div>
+  ${etpField({inc:'I',lbl:'Descrição da necessidade',ty:['HERDADO'],val:esc(CASO.necessidade),prov:pv('real','Herdado do DFD, inciso I')})}
+  ${etpField({inc:'II',lbl:'Previsão no plano de contratações anual',ty:['HERDADO'],val:'Prevista no Plano Anual de Contratações de 2025 (p. 71, item 5).',prov:pv('real','ETP, item 3.2')})}
+  ${etpField({inc:'III',lbl:'Requisitos da contratação',ty:['FIXO','USUÁRIO'],val:'Baterias novas, originais de fábrica, não recondicionadas, seladas, tipo VRLA; certificação INMETRO; teores de chumbo, cádmio e mercúrio conforme a Resolução CONAMA nº 401/2008; garantia mínima de 12 meses a partir do recebimento definitivo.',prov:pv('real','ETP, itens 10 e 18.5')})}
+  ${etpField({inc:'IV',lbl:'Estimativa das quantidades e memória de cálculo',ty:['USUÁRIO'],ui:true,val:`<div class="tbl-wrap"><table><thead><tr><th>Equipamento</th><th class="num">Unid.</th><th class="num">Baterias por unid.</th><th>Modelo</th><th class="num">Total</th></tr></thead><tbody>
+      <tr><td>Nobreak 60 kVA, 380V</td><td class="num">1</td><td class="num">36</td><td>12V 200W</td><td class="num">36</td></tr>
+      <tr><td>Nobreak 40 kVA, 380V</td><td class="num">2</td><td class="num">128</td><td>12V 580W</td><td class="num">256</td></tr>
+      <tr><td colspan="4"><b>Total a adquirir</b></td><td class="num"><b>292</b></td></tr></tbody></table></div>`,prov:pv('real','ETP, item 5')})}
+  ${etpField({inc:'V',lbl:'Levantamento de mercado e justificativa da solução',ty:['BUSCA'],pend:true,ui:true,val:'<span>O processo real não comparou alternativas: adotou a mesma especificação das baterias instaladas sem registrar o levantamento de mercado. No PCA, esta é a primeira busca externa, com cada fonte citada e a escolha feita pelo servidor.</span>',prov:pv('pend','Ausente no ETP real')})}
+  </div>
+  ${pager()}</div>`;
+}
+function priceTable(it){
+  const st = precoItem(it);
+  const rows = it.q.map((x,k)=>`<tr class="${S.on[it.id][k]?'':'off'}"><td><input type="checkbox" id="q-${it.id}-${k}" data-q="${it.id}:${k}" ${S.on[it.id][k]?'checked':''} aria-label="Considerar cotação de ${esc(x.f)}"></td><td>${esc(x.f)}</td><td>${x.d}</td><td class="num">${NUM.format(x.v)}</td></tr>`).join('');
+  return `<div class="stack">
+    <div class="fhead"><span class="lbl">${esc(it.desc)}</span><span class="ref">${it.qtd} unidades</span></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Usar</th><th>Fonte</th><th>Data</th><th class="num">Preço unit. (R$)</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="kpis">
+      <div class="kpi"><div class="k">Cotações</div><div class="v">${st.n} de ${MIN_COTACOES}</div></div>
+      <div class="kpi"><div class="k">Média</div><div class="v">${NUM.format(st.media)}</div></div>
+      <div class="kpi"><div class="k">Mediana · referência</div><div class="v">${NUM.format(st.mediana)}</div></div>
+      <div class="kpi"><div class="k">Subtotal</div><div class="v">${NUM.format(r2(st.mediana*it.qtd))}</div></div>
+    </div></div>`;
+}
+function vETP2(){
+  const tot = totalRef(), mc=minCot();
+  const precoAlert = mc<3
+    ? `<div class="callout bad"><b>Pesquisa insuficiente.</b><span>Algum item ficou com menos de 3 cotações. A referência não deve ser adotada.</span></div>`
+    : mc<MIN_COTACOES
+      ? `<div class="callout warn"><b>Faltam cotações.</b><span>A regra do PCA pede ${MIN_COTACOES} preços por item; este processo tem ${mc}. O sistema aceita seguir, mas registra o déficit para o checkpoint.</span></div>`
+      : `<div class="callout ok"><b>Mínimo de cotações atingido.</b></div>`;
+  return `<div class="sheet">
+  <div class="eyebrow">Documento 2 de 4 · Lei nº 14.133/2021, art. 18, §1º</div>
+  <h2>Estudo Técnico Preliminar · incisos VI a XIII</h2>
+  <div class="sec">${modeSwitch()}${etpStatus()}</div>
+  <div class="sec"><h3>VI · Estimativa do valor <span class="types" style="margin-left:6px">${types(['BUSCA'])}</span></h3>
+    <div class="cascade">
+      <div class="cas"><span class="k">1 · PNCP</span><span>Não consultado no processo real.</span></div>
+      <div class="cas"><span class="k">2 · Bancos de preços</span><span>Sem contratações semelhantes no Banco de Preços e no Painel de Preços (ETP, item 6.1).</span></div>
+      <div class="cas hit"><span class="k">3 · Lojas especializadas</span><span>4 cotações por item, usadas abaixo.</span></div>
+    </div>
+    <p class="note">Desmarque uma cotação para tratá-la como atípica. A média, a mediana e o total são recalculados, e o novo total segue para o TR.</p>
+    ${ITENS.map(priceTable).join('')}
+    ${precoAlert}
+    <div class="callout info"><b>Data das cotações.</b><span>A cotação do fabricante é de janeiro; as demais, de maio de 2025. O PCA mostra a data de cada preço para o servidor avaliar a atualidade.</span></div>
+    <div class="kpis"><div class="kpi"><div class="k">Valor de referência total</div><div class="v">${BRL.format(tot)}</div></div></div>
+    <div class="prov">${pv('real','ETP, itens 6.1 e 6.2 · total do processo real: R$ 107.117,20')}</div>
+  </div>
+  <div class="sec">
+  ${etpField({inc:'VII',lbl:'Descrição da solução como um todo',ty:['USUÁRIO'],val:'Aquisição das baterias pelo Tribunal e instalação pela empresa já contratada para a manutenção dos nobreaks, cujo contrato exclui o fornecimento de baterias, capacitores e ventiladores.',prov:pv('real','ETP, item 5')})}
+  ${etpField({inc:'VIII',lbl:'Justificativa para o parcelamento ou não',ty:['FIXO','USUÁRIO'],val:'Não parcelar: lote único com itens da mesma natureza, que integram um sistema interdependente; preserva padronização e compatibilidade.',prov:pv('real','ETP, itens 3.3 e 20')})}
+  ${etpField({inc:'IX',lbl:'Resultados pretendidos',ty:['USUÁRIO'],pend:true,ui:true,val:'<span>O ETP real cita o objetivo (continuidade do fornecimento de energia), mas não descreve resultados em termos de economicidade e aproveitamento de recursos.</span>',prov:pv('pend','Ausente no ETP real')})}
+  ${etpField({inc:'X',lbl:'Providências prévias à celebração do contrato',ty:['USUÁRIO'],pend:true,ui:true,val:'<span>O ETP real informa que o ambiente não precisa de adequação, mas não trata de outras providências, como a capacitação da fiscalização.</span>',prov:pv('parc','ETP, item 21, cobre só a adequação do ambiente')})}
+  ${etpField({inc:'XI',lbl:'Contratações correlatas e interdependentes',ty:['USUÁRIO'],val:'Contrato vigente de manutenção preventiva e corretiva dos nobreaks, firmado com o fabricante. A contratada fará a substituição das baterias adquiridas.',prov:pv('real','ETP, item 22')})}
+  ${etpField({inc:'XII',lbl:'Impactos ambientais e medidas mitigadoras',ty:['FIXO','USUÁRIO'],val:'Logística reversa e descarte das baterias antigas pela contratada de manutenção (Decreto nº 10.936/2022); embalagens recicláveis; limites da Resolução CONAMA nº 401/2008.',prov:pv('real','ETP, item 19')})}
+  ${etpField({inc:'XIII',lbl:'Posicionamento conclusivo',ty:['FIXO'],val:'A contratação é viável e necessária: está prevista no plano anual, há fornecedores no mercado e a substituição preventiva evita falhas em sistemas críticos.',prov:pv('real','ETP, itens 4.4 e 26')})}
+  </div>
+  ${pager()}</div>`;
+}
+
+function vCheck(){
+  const p = etpPend(), mc=minCot();
+  const decided = S.decision ? `<div class="callout ${S.decision==='aprovado'?'ok':'bad'}"><b>${S.decision==='aprovado'?'ETP aprovado':'ETP devolvido para ajuste'}</b><span>Registrado em ${esc(S.decisionAt)} pelo revisor da demonstração.${S.decisionNote?' Observação: '+esc(S.decisionNote):''}</span></div>` : '';
+  return `<div class="sheet">
+  <div class="eyebrow">Ponto de controle obrigatório entre fases</div>
+  <h2>Checkpoint humano: ETP → TR</h2>
+  <p class="lede">O TR só é gerado depois que uma pessoa aprova o ETP. O sistema apresenta as pendências; a decisão é do servidor.</p>
+  <div class="sec"><h3>Situação para decisão</h3>
+    <div class="tbl-wrap"><table><tbody>
+      <tr><td>DFD</td><td>${S.dfdDone?'Concluído com os 8 incisos':dfdMissing().length?`${dfdMissing().length} inciso(s) pendente(s): `+dfdMissing().map(k=>'art. 8º, '+k).join(', '):'Preenchido, ainda não concluído'}</td></tr>
+      <tr><td>ETP, modo ${S.mode}</td><td>${p.length?`${p.length} inciso(s) pendente(s): `+p.join(', '):'Mínimo legal atendido'}</td></tr>
+      <tr><td>Pesquisa de preços</td><td>${mc} de ${MIN_COTACOES} cotações por item · referência ${BRL.format(totalRef())}</td></tr>
+      <tr><td>Objeto</td><td>Redução em relação ao DFD (ventiladores) ${S.objJust.trim()?'justificada':'sem justificativa'}</td></tr>
+    </tbody></table></div>
+  </div>
+  <div class="sec"><h3>Decisão</h3>
+    <label for="ck-note" class="note">Observação do revisor (opcional)</label>
+    <textarea id="ck-note" placeholder="Ex.: aprovar com ressalva sobre o número de cotações">${esc(S.decisionNote)}</textarea>
+    <div class="row"><button class="btn primary" id="ck-ok">Aprovar e liberar o TR</button><button class="btn danger" id="ck-no">Devolver para ajuste</button></div>
+    ${decided}
+  </div>
+  ${pager()}</div>`;
+}
+
+const PARAMS = [
+  {k:'lances',n:2,t:'Intervalo mínimo entre lances',a:['ETP, item 4.5','0,5% sobre o lance'],b:['TR, item 4.4','R$ 100,00'],opts:['0,5% sobre o lance','R$ 100,00']},
+  {k:'validade',n:3,t:'Validade da proposta',a:['ETP, item 13','60 dias'],b:['TR, item 13.1','90 dias'],opts:['60 dias','90 dias']},
+  {k:'reajuste',n:4,t:'Reajuste de preços',a:['ETP, item 16.1','Não se aplica'],b:['TR, item 16.1','IPCA após 12 meses do orçamento'],opts:['Não se aplica (vigência de 150 dias)','IPCA após 12 meses do orçamento']},
+  {k:'marco',n:5,t:'Início da contagem do prazo de entrega',a:['TR, item 8','Recebimento da Nota de Empenho'],b:['TR, itens 12c e 18.4.1','Assinatura do contrato'],opts:['Recebimento da Nota de Empenho','Assinatura do contrato']}
+];
+function vTR(){
+  if(S.decision!=='aprovado'){
+    return `<div class="sheet"><div class="eyebrow">Documento 3 de 4</div><h2>Termo de Referência</h2>
+      <div class="sec"><div class="callout ${S.decision==='devolvido'?'bad':'warn'}"><b>TR bloqueado.</b><span>${S.decision==='devolvido'?'O ETP foi devolvido para ajuste no checkpoint.':'O ETP ainda não foi aprovado no checkpoint.'} O TR herda o ETP e só é gerado depois da aprovação.</span></div>
+      <div class="row"><button class="btn primary" data-go="4">Ir ao checkpoint</button></div></div>${pager()}</div>`;
+  }
+  const tot = totalRef();
+  const A=precoItem(ITENS[0]), B=precoItem(ITENS[1]);
+  return `<div class="sheet">
+  <div class="eyebrow">Documento 3 de 4 · Lei nº 14.133/2021, art. 6º, XXIII, e art. 40, §1º</div>
+  <h2>Termo de Referência</h2>
+  <p class="lede">O TR reaproveita o ETP aprovado. O servidor informa apenas prazos e forma de fornecimento; o restante é herdado ou institucional.</p>
+  <div class="sec">
+  ${field({ref:'art. 6º, XXIII, a',lbl:'Definição do objeto',ty:['HERDADO','USUÁRIO'],val:'Aquisição de 292 baterias (256 de 12V 580W e 36 de 12V 200W) para os nobreaks do Datacenter e da automação do Edifício Sede. Bem comum. Vigência de 150 dias.',prov:pv('real','Herdado do ETP, incisos I e IV · vigência informada pelo servidor')})}
+  ${field({ref:'art. 6º, XXIII, b',lbl:'Fundamentação',ty:['HERDADO'],val:'Remete ao Estudo Técnico Preliminar deste processo, aprovado no checkpoint'+(S.decisionAt?' em '+esc(S.decisionAt):'')+'.',prov:pv('sim','Vínculo gerado pela demonstração')})}
+  ${field({ref:'art. 6º, XXIII, c',lbl:'Descrição da solução e ciclo de vida',ty:['HERDADO'],val:'Fornecimento de baterias VRLA novas e seladas; instalação pela contratada de manutenção dos nobreaks; descarte das baterias antigas por logística reversa.',prov:pv('real','Herdado do ETP, incisos VII e XII')})}
+  ${field({ref:'art. 6º, XXIII, d',lbl:'Requisitos da contratação',ty:['FIXO'],val:'Habilitação jurídica (art. 66) e regularidade fiscal, social e trabalhista (art. 68): certidões da Fazenda Nacional, FGTS, Fazenda Estadual e CNDT. Produto com certificação INMETRO.',prov:pv('real','TR, itens 9.2 e 9.3 · citação do art. 66 corrigida pela base legal fixa')})}
+  ${field({ref:'art. 6º, XXIII, e',lbl:'Modelo de execução',ty:['USUÁRIO','FIXO'],val:`Entrega em até 60 dias corridos, contados do marco definido: <b>${esc(S.params.marco.toLowerCase())}</b>. Local: Edifício Sede, Av. Nossa Senhora dos Navegantes, 1245, Enseada do Suá, Vitória/ES, de segunda a sexta, das 12h às 19h, com agendamento.`,prov:pv('real','TR, itens 8 e 18.1 · marco unificado na validação cruzada')})}
+  ${field({ref:'art. 6º, XXIII, f',lbl:'Modelo de gestão do contrato',ty:['FIXO'],val:'Fiscal designado pela autoridade competente (art. 117). Recebimento provisório em até 2 dias; aferição em até 10 dias; recebimento definitivo em até 5 dias úteis.',prov:pv('real','TR, itens 18.2 e 20')})}
+  ${field({ref:'art. 6º, XXIII, g',lbl:'Critérios de medição e pagamento',ty:['FIXO'],val:'Nota fiscal inserida no SIGEO-JT; pagamento em até 30 dias da inserção.',prov:pv('real','TR, itens 20.4 e 20.7')})}
+  ${field({ref:'art. 6º, XXIII, h',lbl:'Forma e critérios de seleção do fornecedor',ty:['FIXO'],val:`Pregão eletrônico, lote único, menor preço global (art. 33, I). Disputa aberto e fechado; intervalo mínimo entre lances: <b>${esc(S.params.lances)}</b>. Validade da proposta: <b>${esc(S.params.validade)}</b>.`,prov:pv('real','TR, itens 4 e 15 · parâmetros unificados na validação cruzada')})}
+  ${field({ref:'art. 6º, XXIII, i',lbl:'Estimativa do valor da contratação',ty:['HERDADO'],val:`<b>${BRL.format(tot)}</b> · ${NUM.format(A.mediana)} × 256 + ${NUM.format(B.mediana)} × 36. Reajuste: ${esc(S.params.reajuste.toLowerCase())}.`,prov:pv('real','Herdado do ETP, inciso VI · atualiza se você mudar as cotações')})}
+  ${field({ref:'art. 6º, XXIII, j',lbl:'Adequação orçamentária',ty:['HERDADO'],val:'Prevista no Plano Anual de Contratações de 2025 (p. 71, item 5). Dotação orçamentária a informar.',prov:pv('parc','Dotação não consta dos documentos do processo')})}
+  ${field({ref:'art. 40, §1º, I',lbl:'Especificação do produto',ty:['BUSCA'],val:'Referências CSB 12580F2 e CSB HRL 12200W. A ficha técnica completa deve vir de catálogo do fabricante, e não de lojas.',prov:pv('parc','Datasheets citados no anexo do TR, fora dos documentos disponíveis')})}
+  ${field({ref:'art. 40, §1º, III',lbl:'Garantia exigida',ty:['HERDADO'],val:'Mínimo de 12 meses, contados do recebimento definitivo.',prov:pv('real','Herdado do ETP, inciso III')})}
+  </div>
+
+  <div class="sec"><h3>Validação cruzada: o que a herança de campos evita</h3>
+    <p class="note">No processo manual, ETP e TR foram redigidos separadamente e divergiram. Os casos abaixo são reais, com autores omitidos. No PCA, cada parâmetro é um campo único: escolha o valor e veja os dois documentos receberem o mesmo texto.</p>
+    <div class="vcards">
+      <div class="vc"><h4>1 · Objeto reduzido sem justificativa</h4>
+        <div class="manual"><div><small>DFD, item 1(3)</small>Baterias e ventiladores</div><div><small>ETP e TR, item 1</small>Só baterias</div></div>
+        <div class="pca"><span>No PCA, reduzir o objeto herdado exige justificativa registrada.</span>
+          <label for="obj-just" class="note">Justificativa</label><textarea id="obj-just" placeholder="Ex.: ventiladores fornecidos por outra via">${esc(S.objJust)}</textarea></div></div>
+      ${PARAMS.map(p=>`<div class="vc"><h4>${p.n} · ${p.t}</h4>
+        <div class="manual"><div><small>${p.a[0]}</small>${esc(p.a[1])}</div><div><small>${p.b[0]}</small>${esc(p.b[1])}</div></div>
+        <div class="pca"><label for="par-${p.k}">Campo único no PCA</label>
+          <select id="par-${p.k}" data-par="${p.k}">${p.opts.map(o=>`<option ${S.params[p.k]===o?'selected':''}>${esc(o)}</option>`).join('')}</select>
+          <span class="mirror" id="mir-${p.k}">ETP: ${esc(S.params[p.k])} · TR: ${esc(S.params[p.k])}</span></div></div>`).join('')}
+      <div class="vc"><h4>6 · Lei revogada citada</h4>
+        <div class="manual"><div><small>TR, item 22.5</small>Pagamentos conforme a Lei nº 8.666/1993</div><div><small>Situação</small>Lei revogada pela Lei nº 14.133/2021</div></div>
+        <div class="pca">As citações legais vêm de uma tabela fixa, conferida na fonte oficial. Uma lei revogada não entra no texto.</div></div>
+      <div class="vc"><h4>7 · Impedimento de participar</h4>
+        <div class="manual"><div><small>ETP, item 9.1</small>Arts. 155 a 159 (infrações e sanções)</div><div><small>TR, item 9.1</small>Art. 14</div></div>
+        <div class="pca">Base fixa: art. 14 da Lei nº 14.133/2021, que trata de quem não pode disputar a licitação.</div></div>
+      <div class="vc"><h4>8 · Artigo da habilitação jurídica</h4>
+        <div class="manual"><div><small>ETP e TR, item 9.2</small>Art. 67</div><div><small>Lei nº 14.133/2021</small>Habilitação jurídica é o art. 66</div></div>
+        <div class="pca">Mesmo erro nos dois documentos: copiar de um modelo propaga a falha. Na base fixa, a citação é corrigida uma vez para todos os processos.</div></div>
+    </div>
+  </div>
+  ${pager()}</div>`;
+}
+
+function opts(list,cur,fmt){ return list.map(v=>`<option value="${v}" ${Math.abs(v-cur)<1e-9?'selected':''}>${fmt(v)}</option>`).join(''); }
+const P_OPTS=[0.1,0.15,0.2,0.25,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1];
+const I_OPTS=[1,2,3,4,5];
+function riskCard(r,idx){
+  const g0=r2(r.p*r.i), g1=r2(r.rp*r.ri), c0=grau(g0), c1=grau(g1);
+  const fmtP=v=>String(v).replace('.',',');
+  return `<div class="field">
+    <div class="fhead"><span class="lbl">${esc(r.nome)}</span><span class="types">${r.ilus?pv('ilus'):pv('real','Risco do modelo EP 3.01')}</span></div>
+    <div class="fval ui"><b>Causa:</b> ${esc(r.causa)}</div>
+    <div class="row">
+      <span class="note">Situação original</span>
+      <label class="note" for="rp-${idx}">P</label><select id="rp-${idx}" data-risk="${idx}:p">${opts(P_OPTS,r.p,fmtP)}</select>
+      <label class="note" for="ri-${idx}">I</label><select id="ri-${idx}" data-risk="${idx}:i">${opts(I_OPTS,r.i,String)}</select>
+      <span class="grau ${c0[0]}">${String(g0).replace('.',',')} · ${c0[1]}</span>
+    </div>
+    <div class="fval ui"><b>Medidas preventivas:</b> ${esc(r.med)}</div>
+    <div class="row">
+      <span class="note">Após as medidas</span>
+      <label class="note" for="rrp-${idx}">P</label><select id="rrp-${idx}" data-risk="${idx}:rp">${opts(P_OPTS,r.rp,fmtP)}</select>
+      <label class="note" for="rri-${idx}">I</label><select id="rri-${idx}" data-risk="${idx}:ri">${opts(I_OPTS,r.ri,String)}</select>
+      <span class="grau ${c1[0]}">${String(g1).replace('.',',')} · ${c1[1]}</span>
+    </div>
+    <div class="prov">Responsável: ${esc(r.resp)}</div>
+  </div>`;
+}
+function vMapa(){
+  const fases=['Planejamento','Licitação','Gestão do contrato'];
+  return `<div class="sheet">
+  <div class="eyebrow">Documento 4 de 4 · estrutura do modelo EP 3.01 do Tribunal</div>
+  <h2>Mapa de Risco por fase</h2>
+  <p class="lede">O processo real cita um mapa de risco em anexo que não está entre os documentos disponíveis. Esta tela usa a estrutura do modelo EP 3.01: riscos por fase, probabilidade de 0,1 a 1,0 e impacto de 1 a 5, antes e depois das medidas. Altere P ou I e o grau é recalculado.</p>
+  <div class="sec"><div class="scale">
+    <span class="grau g1">&lt; 1 · Insignificante</span><span class="grau g2">1 a 2 · Leve</span><span class="grau g3">2 a 3 · Médio</span><span class="grau g4">3 a 4 · Alto</span><span class="grau g5">4 a 5 · Muito alto</span>
+  </div><p class="note">Faixas da legenda do modelo EP 3.01. Grau de risco = probabilidade × impacto.</p></div>
+  ${fases.map(f=>`<div class="sec"><h3>Fase: ${f}</h3><div class="risk-phase">${S.risks.map((r,i)=>r.fase===f?riskCard(r,i):'').join('')}</div></div>`).join('')}
+  <div class="sec"><div class="callout info"><b>Este não é a matriz de riscos contratual.</b><span>O mapa por fase acompanha o planejamento. A matriz de riscos é cláusula contratual com outra finalidade e não se aplica a esta aquisição.</span></div></div>
+  ${pager()}</div>`;
+}
+
+function vSaida(){
+  const miss=dfdMissing();
+  return `<div class="sheet">
+  <div class="eyebrow">Fase 5 do roteiro</div>
+  <h2>Saída em .docx editável</h2>
+  <p class="lede">O DFD já pode ser exportado de verdade a partir desta página. ETP, TR e Mapa de Risco serão exportados na Fase 5, depois da validação do modelo de dados.</p>
+  <div class="sec doclist">
+    <div class="docrow"><div><div class="t">DFD · Documento de Formalização da Demanda</div><div class="status-line" id="exp-status">${miss.length?`Complete os incisos pendentes (${miss.map(k=>'art. 8º, '+k).join(', ')}) para exportar.`:'Pronto para exportar com os 8 incisos.'}</div></div><button class="btn primary" id="exp-dfd" ${miss.length?'disabled':''}>Baixar .docx</button></div>
+    <div class="docrow"><div><div class="t">ETP · Estudo Técnico Preliminar</div><div class="status-line">Exportação na Fase 5.</div></div><button class="btn" disabled>Fase 5</button></div>
+    <div class="docrow"><div><div class="t">TR · Termo de Referência</div><div class="status-line">Exportação na Fase 5.</div></div><button class="btn" disabled>Fase 5</button></div>
+    <div class="docrow"><div><div class="t">Mapa de Risco</div><div class="status-line">Exportação na Fase 5.</div></div><button class="btn" disabled>Fase 5</button></div>
+  </div>
+  ${miss.length?`<div class="sec"><div class="row"><button class="btn" data-go="1">Ir ao DFD</button></div></div>`:''}
+  <div class="sec"><h3>Registro desta sessão</h3><div class="log" id="log">${logLines().map(esc).join('<br>')}</div></div>
+  ${pager()}</div>`;
+}
+function logLines(){
+  const L=[];
+  L.push('DFD: '+(S.dfdDone?'concluído':(dfdMissing().length?dfdMissing().length+' inciso(s) pendente(s)':'preenchido, não concluído')));
+  const sims=Object.keys(S.dfdSim).filter(k=>S.dfd[k]===SIM_DFD[k]); if(sims.length) L.push('DFD: incisos simulados para a demonstração: '+sims.join(', '));
+  L.push('ETP: modo '+S.mode+'; pendências: '+(etpPend().join(', ')||'nenhuma'));
+  L.push('Preços: '+minCot()+' de '+MIN_COTACOES+' cotações por item; referência '+BRL.format(totalRef()));
+  L.push('Checkpoint: '+(S.decision?S.decision+' em '+S.decisionAt:'sem decisão'));
+  return L;
+}
+
+/* ---------- exportação .docx do DFD ---------- */
+function buildDFDDoc(){
+  const D = window.docx;
+  const P = (t,o={}) => new D.Paragraph({spacing:{after:120},alignment:o.al||D.AlignmentType.JUSTIFIED,children:[new D.TextRun({text:t,bold:!!o.b,size:o.size||22,italics:!!o.i})]});
+  const H = t => new D.Paragraph({spacing:{before:240,after:80},children:[new D.TextRun({text:t,bold:true,size:22})]});
+  const prio = 'Alto. Fim da vida útil recomendada pelo fabricante, em equipamentos que mantêm o funcionamento do edifício e a prestação jurisdicional.';
+  const blocos = [
+    ['I – Justificativa da necessidade', CASO.necessidade],
+    ['II – Descrição sucinta do objeto', CASO.objetoDFD],
+    ['III – Quantidade a ser contratada', S.dfd.III],
+    ['IV – Estimativa preliminar do valor', S.dfd.IV],
+    ['V – Data pretendida para a conclusão', 'Julho de 2025.'],
+    ['VI – Grau de prioridade', prio],
+    ['VII – Vinculação ou dependência com outro DFD', S.dfd.VII],
+    ['VIII – Área requisitante e responsável', 'Coordenadoria de Projetos da SIMS. Responsável técnico: [nome].']
+  ];
+  const sims=Object.keys(S.dfdSim).filter(k=>S.dfd[k]===SIM_DFD[k]);
+  const children = [
+    P('PODER JUDICIÁRIO · JUSTIÇA DO TRABALHO',{al:D.AlignmentType.CENTER,b:true}),
+    P('Tribunal Regional do Trabalho da 17ª Região',{al:D.AlignmentType.CENTER}),
+    P('Secretaria de Infraestrutura, Manutenção e Serviços (SIMS)',{al:D.AlignmentType.CENTER}),
+    new D.Paragraph({spacing:{before:240,after:240},alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:'DOCUMENTO DE FORMALIZAÇÃO DA DEMANDA',bold:true,size:28})]}),
+    P('Processo: [número do processo]'),
+    P('Base normativa: Decreto nº 10.947/2022, art. 8º; Lei nº 14.133/2021.'),
+    ...blocos.flatMap(([h,t])=>[H(h),P(t)]),
+    H('Declaração'),
+    P('Atesto ter sido verificada a lista de projetos cadastrados nas demais coordenadorias da SIMS e na própria Secretaria, sem incompatibilidade ou sobreposição com o objeto aqui pretendido.'),
+    P('Vitória/ES, [data].',{al:D.AlignmentType.LEFT}),
+    P('______________________________',{al:D.AlignmentType.CENTER}),
+    P('[Responsável pela demanda]',{al:D.AlignmentType.CENTER}),
+    new D.Paragraph({spacing:{before:360},children:[new D.TextRun({text:'Documento gerado pelo protótipo PCA para demonstração. Dados de processo real de 2025, anonimizados.'+(sims.length?' Incisos preenchidos apenas para a demonstração: '+sims.join(', ')+'.':''),italics:true,size:18})]})
+  ];
+  return new D.Document({creator:'PCA (protótipo)',title:'DFD – demonstração',styles:{default:{document:{run:{font:'Calibri',size:22}}}},sections:[{properties:{page:{margin:{top:1418,bottom:1134,left:1701,right:1134}}},children}]});
+}
+async function exportDFD(btn){
+  const st=document.getElementById('exp-status');
+  if(!window.docx){ st.textContent='A biblioteca de geração do .docx não carregou. Recarregue a página e tente de novo.'; return; }
+  btn.disabled=true; st.textContent='Gerando o arquivo…';
+  try{
+    const blob = await window.docx.Packer.toBlob(buildDFDDoc());
+    const dl = (window.claude && typeof window.claude.use==='function') ? await window.claude.use('downloads') : null;
+    if(!dl){ st.textContent='O download só funciona com a página aberta no claude.ai. O arquivo foi gerado, mas esta visualização não permite salvá-lo.'; btn.disabled=false; return; }
+    await dl.save({filename:'DFD_baterias_nobreaks_demonstracao.docx',data:blob});
+    st.textContent='Arquivo entregue ao navegador: DFD_baterias_nobreaks_demonstracao.docx';
+  }catch(e){
+    const c=e&&e.code;
+    st.textContent = c==='declined' ? 'Download cancelado.' : c==='rate_limited' ? 'Já há uma confirmação de download aberta. Responda a ela e tente de novo.' : 'Não foi possível salvar o arquivo nesta visualização.';
+  }
+  btn.disabled=false;
+}
+
+/* ---------- render e eventos ---------- */
+const VIEWS={abertura:vAbertura,dfd:vDFD,etp1:vETP1,etp2:vETP2,check:vCheck,tr:vTR,mapa:vMapa,saida:vSaida};
+function render(keepScroll){
+  renderSteps();
+  document.getElementById('main').innerHTML = VIEWS[SCREENS[S.screen].k]();
+  if(SCREENS[S.screen].k==='dfd') updDFD();
+  if(!keepScroll){ try{ window.scrollTo({top:0}); }catch(_){} }
+}
+document.addEventListener('click',e=>{
+  const go=e.target.closest('[data-go]'); if(go){ S.screen=+go.dataset.go; render(); return; }
+  const md=e.target.closest('[data-mode]'); if(md){ S.mode=md.dataset.mode; render(true); return; }
+  const id=e.target.closest('button')?.id;
+  if(id==='dfd-sim'){ ['III','IV','VII'].forEach(k=>{ if(!S.dfd[k].trim()){ S.dfd[k]=SIM_DFD[k]; S.dfdSim[k]=true; const t=document.getElementById('dfd-'+k); if(t) t.value=SIM_DFD[k]; } }); updDFD(); }
+  if(id==='dfd-done'){ if(!dfdMissing().length){ S.dfdDone=true; updDFD(); } }
+  if(id==='ck-ok'||id==='ck-no'){ S.decision= id==='ck-ok'?'aprovado':'devolvido'; S.decisionAt=nowStr(); render(true); }
+  if(id==='exp-dfd'){ exportDFD(e.target.closest('button')); }
+});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.dataset.dfd){ const k=t.dataset.dfd; S.dfd[k]=t.value; if(t.value!==SIM_DFD[k]) delete S.dfdSim[k]; if(S.dfdDone && dfdMissing().length) S.dfdDone=false; updDFD(); }
+  if(t.id==='ck-note'){ S.decisionNote=t.value; }
+  if(t.id==='obj-just'){ S.objJust=t.value; }
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.q){ const [it,k]=t.dataset.q.split(':'); S.on[it][+k]=t.checked; render(true); }
+  if(t.dataset.par){ S.params[t.dataset.par]=t.value; const m=document.getElementById('mir-'+t.dataset.par); if(m) m.textContent='ETP: '+t.value+' · TR: '+t.value; render(true); }
+  if(t.dataset.risk){ const [i,f]=t.dataset.risk.split(':'); S.risks[+i][f]=parseFloat(t.value); render(true); }
+});
+render();
+})();
+</script>
