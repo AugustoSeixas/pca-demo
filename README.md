@@ -20,9 +20,12 @@ A demonstração percorre os quatro documentos do planejamento com o caso real d
 
 ## Como abrir
 
-Abra `demo/demonstracao-pca.html` em um navegador. A página carrega fontes do Google Fonts e a biblioteca `docx` (8.5.0) do jsDelivr.
+- **Online:** https://augustoseixas.github.io/pca-demo/ (GitHub Pages).
+- **Local:** abra `demo/demonstracao-pca.html` em um navegador.
 
-O botão de exportação do .docx usa o recurso de download do claude.ai. Fora do claude.ai, o arquivo é gerado, mas a página informa que não pode salvá-lo.
+A página carrega fontes do Google Fonts e a biblioteca `docx` (8.5.0) do jsDelivr; precisa de internet.
+
+O botão **Baixar .docx** (tela Saída) gera o DFD no próprio navegador. No GitHub Pages ou aberto localmente, o download é direto; dentro do claude.ai, usa o recurso de download do claude.ai, que pede confirmação.
 
 ## Documentos
 

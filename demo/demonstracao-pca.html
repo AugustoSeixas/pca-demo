@@ -1,3 +1,9 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Demonstração PCA</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -163,6 +169,8 @@ tr.off td:first-child{text-decoration:none}
 }
 @media (prefers-reduced-motion:no-preference){.sheet{animation:in .18s ease-out}@keyframes in{from{transform:translateY(4px)}to{transform:none}}}
 </style>
+</head>
+<body>
 
 <header class="top wrap">
   <div class="top-in">
@@ -656,11 +664,20 @@ async function exportDFD(btn){
   if(!window.docx){ st.textContent='A biblioteca de geração do .docx não carregou. Recarregue a página e tente de novo.'; return; }
   btn.disabled=true; st.textContent='Gerando o arquivo…';
   try{
+    const NOME='DFD_baterias_nobreaks_demonstracao.docx';
     const blob = await window.docx.Packer.toBlob(buildDFDDoc());
-    const dl = (window.claude && typeof window.claude.use==='function') ? await window.claude.use('downloads') : null;
-    if(!dl){ st.textContent='O download só funciona com a página aberta no claude.ai. O arquivo foi gerado, mas esta visualização não permite salvá-lo.'; btn.disabled=false; return; }
-    await dl.save({filename:'DFD_baterias_nobreaks_demonstracao.docx',data:blob});
-    st.textContent='Arquivo entregue ao navegador: DFD_baterias_nobreaks_demonstracao.docx';
+    const noClaude = !(window.claude && typeof window.claude.use==='function');
+    if(noClaude){
+      /* Página aberta fora do claude.ai (GitHub Pages ou arquivo local): download direto pelo navegador. */
+      const url=URL.createObjectURL(blob); const a=document.createElement('a');
+      a.href=url; a.download=NOME; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),5000);
+      st.textContent='Download iniciado: '+NOME; btn.disabled=false; return;
+    }
+    const dl = await window.claude.use('downloads');
+    if(!dl){ st.textContent='Esta visualização do claude.ai não permite salvar arquivos. Abra a demonstração pelo GitHub Pages para baixar o .docx.'; btn.disabled=false; return; }
+    await dl.save({filename:NOME,data:blob});
+    st.textContent='Arquivo entregue ao navegador: '+NOME;
   }catch(e){
     const c=e&&e.code;
     st.textContent = c==='declined' ? 'Download cancelado.' : c==='rate_limited' ? 'Já há uma confirmação de download aberta. Responda a ela e tente de novo.' : 'Não foi possível salvar o arquivo nesta visualização.';
@@ -700,3 +717,6 @@ document.addEventListener('change',e=>{
 render();
 })();
 </script>
+
+</body>
+</html>
