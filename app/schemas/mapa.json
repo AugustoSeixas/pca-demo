@@ -1,0 +1,38 @@
+{
+  "artefato": "mapa",
+  "versao": "2.0-rascunho",
+  "situacao": "Estrutura por fase do modelo EP 3.01, conforme a especificação funcional v2. Lista padrão de riscos e modelo Word entram na entrega E3 (pergunta A8 ao coordenador).",
+  "titulo": "Mapa de Riscos",
+  "sigla": "MAPA",
+  "fundamento": "Modelo EP 3.01 do TRT-17 (riscos por fase; grau = probabilidade × impacto)",
+  "modelo": "modelos/MAPA.docx",
+  "arquivo_saida": "MAPA_{id}.docx",
+  "escala": {
+    "probabilidade": { "minimo": 0.1, "maximo": 1.0 },
+    "impacto": { "minimo": 1, "maximo": 5 },
+    "faixas": [
+      { "ate": 1, "classe": "Insignificante" },
+      { "ate": 2, "classe": "Leve" },
+      { "ate": 3, "classe": "Médio" },
+      { "ate": 4, "classe": "Alto" },
+      { "ate": 5, "classe": "Muito alto" }
+    ]
+  },
+  "secoes": [
+    {
+      "id": "identificacao",
+      "titulo": "Identificação",
+      "campos": [
+        { "id": "objeto", "ref": "Identificação", "rotulo": "Objeto", "tipo": "texto_longo", "classe": "HERDADO", "origem": "dfd.objeto", "obrigatorio": true, "marcador": "objeto" },
+        { "id": "unidade", "ref": "Identificação", "rotulo": "Área requisitante", "tipo": "texto", "classe": "HERDADO", "origem": "contratacao.unidade_descricao", "obrigatorio": true, "marcador": "unidade" }
+      ]
+    },
+    {
+      "id": "riscos",
+      "titulo": "Riscos por fase",
+      "campos": [
+        { "id": "riscos", "ref": "EP 3.01", "rotulo": "Riscos, medidas e responsáveis", "tipo": "tabela", "classe": "USUARIO", "min_linhas": 1, "obrigatorio": true, "ajuda": "Probabilidade de 0,1 a 1,0 e impacto de 1 a 5, antes e depois das medidas. O grau é calculado (RN-08).", "marcador": "riscos", "colunas": [ { "id": "fase", "rotulo": "Fase", "tipo": "selecao", "opcoes": ["Planejamento", "Seleção do fornecedor", "Gestão do contrato"], "obrigatorio": true }, { "id": "risco", "rotulo": "Risco", "tipo": "texto", "obrigatorio": true }, { "id": "causa", "rotulo": "Causa", "tipo": "texto", "obrigatorio": true }, { "id": "p", "rotulo": "P", "tipo": "numero", "obrigatorio": true, "positivo": true }, { "id": "i", "rotulo": "I", "tipo": "numero", "obrigatorio": true, "positivo": true }, { "id": "medidas", "rotulo": "Medidas de controle", "tipo": "texto", "obrigatorio": true }, { "id": "p_residual", "rotulo": "P após medidas", "tipo": "numero", "obrigatorio": true, "positivo": true }, { "id": "i_residual", "rotulo": "I após medidas", "tipo": "numero", "obrigatorio": true, "positivo": true }, { "id": "responsavel", "rotulo": "Responsável", "tipo": "texto", "obrigatorio": true } ] }
+      ]
+    }
+  ]
+}

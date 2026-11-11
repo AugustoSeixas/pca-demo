@@ -1,0 +1,42 @@
+{
+  "artefato": "tr",
+  "versao": "2.0-rascunho",
+  "situacao": "Campos conforme a especificação funcional v2. Textos fixos e modelo Word entram na entrega E3; redação das cláusulas padrão depende das perguntas A5 a A7 ao coordenador.",
+  "titulo": "Termo de Referência",
+  "sigla": "TR",
+  "fundamento": "Lei nº 14.133/2021, art. 6º, XXIII, e art. 40, §1º",
+  "modelo": "modelos/TR.docx",
+  "arquivo_saida": "TR_{id}.docx",
+  "secoes": [
+    {
+      "id": "art6",
+      "titulo": "Art. 6º, XXIII",
+      "campos": [
+        { "id": "objeto", "ref": "art. 6º, XXIII, a", "rotulo": "Definição do objeto", "tipo": "texto_longo", "classe": "HERDADO", "origem": "dfd.objeto", "obrigatorio": true, "fundamento": "Lei nº 14.133/2021, art. 6º, XXIII, a", "marcador": "objeto" },
+        { "id": "itens", "ref": "art. 6º, XXIII, a", "rotulo": "Itens e quantidades", "tipo": "tabela", "classe": "HERDADO", "origem": "dfd.itens", "obrigatorio": true, "fundamento": "Lei nº 14.133/2021, art. 6º, XXIII, a", "marcador": "itens", "colunas": [ { "id": "descricao", "rotulo": "Descrição do item", "tipo": "texto" }, { "id": "unidade", "rotulo": "Unidade", "tipo": "texto" }, { "id": "quantidade", "rotulo": "Quantidade", "tipo": "numero" } ] },
+        { "id": "vigencia", "ref": "art. 6º, XXIII, a", "rotulo": "Vigência do contrato", "tipo": "texto", "classe": "USUARIO", "obrigatorio": true, "fundamento": "Lei nº 14.133/2021, art. 6º, XXIII, a", "marcador": "vigencia" },
+        { "id": "fundamentacao", "ref": "art. 6º, XXIII, b", "rotulo": "Fundamentação da contratação", "tipo": "texto_longo", "classe": "HERDADO", "origem": "etp.conclusao", "obrigatorio": true, "fundamento": "Lei nº 14.133/2021, art. 6º, XXIII, b", "marcador": "fundamentacao" },
+        { "id": "solucao", "ref": "art. 6º, XXIII, c", "rotulo": "Descrição da solução como um todo (ciclo de vida)", "tipo": "texto_longo", "classe": "HERDADO", "origem": "etp.descricao_solucao", "obrigatorio": true, "fundamento": "Lei nº 14.133/2021, art. 6º, XXIII, c", "marcador": "solucao" },
+        { "id": "impactos", "ref": "art. 6º, XXIII, c", "rotulo": "Obrigações ambientais e logística reversa", "tipo": "texto_longo", "classe": "HERDADO", "origem": "etp.impactos", "obrigatorio": false, "fundamento": "Lei nº 14.133/2021, art. 6º, XXIII, c", "marcador": "impactos" },
+        { "id": "requisitos", "ref": "art. 6º, XXIII, d", "rotulo": "Requisitos da contratação", "tipo": "texto_longo", "classe": "FIXO", "texto": [], "pendente": "Habilitação jurídica (art. 66) e habilitações fiscal, social e trabalhista (art. 68): redação com o modelo Word (E3).", "fundamento": "Lei nº 14.133/2021, art. 6º, XXIII, d; arts. 66 e 68" },
+        { "id": "prazo_entrega", "ref": "art. 6º, XXIII, e", "rotulo": "Prazo de entrega", "tipo": "texto", "classe": "USUARIO", "obrigatorio": true, "fundamento": "Lei nº 14.133/2021, art. 6º, XXIII, e", "marcador": "prazo_entrega" },
+        { "id": "forma_fornecimento", "ref": "art. 6º, XXIII, e", "rotulo": "Forma de fornecimento", "tipo": "selecao", "classe": "USUARIO", "opcoes": ["Integral", "Parcelada"], "obrigatorio": true, "fundamento": "Lei nº 14.133/2021, art. 6º, XXIII, e", "marcador": "forma_fornecimento" },
+        { "id": "local_entrega", "ref": "art. 6º, XXIII, e", "rotulo": "Local e horário de recebimento", "tipo": "texto_longo", "classe": "FIXO", "texto": [], "pendente": "Almoxarifado, 12h–18h, ou Edifício Sede, 12h–19h: pergunta A5 ao coordenador.", "fundamento": "Lei nº 14.133/2021, art. 6º, XXIII, e" },
+        { "id": "gestao", "ref": "art. 6º, XXIII, f", "rotulo": "Modelo de gestão do contrato", "tipo": "texto_longo", "classe": "FIXO", "texto": [], "pendente": "Clausulado padrão (E3).", "fundamento": "Lei nº 14.133/2021, art. 6º, XXIII, f" },
+        { "id": "pagamento", "ref": "art. 6º, XXIII, g", "rotulo": "Critérios de medição e pagamento", "tipo": "texto_longo", "classe": "FIXO", "texto": [], "pendente": "Clausulado padrão (E3).", "fundamento": "Lei nº 14.133/2021, art. 6º, XXIII, g" },
+        { "id": "selecao", "ref": "art. 6º, XXIII, h", "rotulo": "Forma e critérios de seleção do fornecedor", "tipo": "texto_longo", "classe": "FIXO", "texto": [], "pendente": "Clausulado padrão (E3).", "fundamento": "Lei nº 14.133/2021, art. 6º, XXIII, h" },
+        { "id": "cotacoes", "ref": "art. 6º, XXIII, i", "rotulo": "Estimativas do valor da contratação", "tipo": "tabela", "classe": "HERDADO", "origem": "etp.cotacoes", "obrigatorio": true, "fundamento": "Lei nº 14.133/2021, art. 6º, XXIII, i", "marcador": "cotacoes", "colunas": [ { "id": "item", "rotulo": "Item", "tipo": "texto" }, { "id": "fonte", "rotulo": "Fonte", "tipo": "texto" }, { "id": "data", "rotulo": "Data do preço", "tipo": "data" }, { "id": "valor", "rotulo": "Preço unitário", "tipo": "moeda" } ] },
+        { "id": "adequacao_orcamentaria", "ref": "art. 6º, XXIII, j", "rotulo": "Adequação orçamentária", "tipo": "texto_longo", "classe": "USUARIO", "obrigatorio": true, "fundamento": "Lei nº 14.133/2021, art. 6º, XXIII, j", "ajuda": "Vínculo com o plano anual e a dotação de origem.", "marcador": "adequacao_orcamentaria" }
+      ]
+    },
+    {
+      "id": "art40",
+      "titulo": "Art. 40, §1º",
+      "campos": [
+        { "id": "especificacao", "ref": "art. 40, §1º, I", "rotulo": "Especificação do produto", "tipo": "tabela", "classe": "BUSCA", "min_linhas": 1, "obrigatorio": true, "fundamento": "Lei nº 14.133/2021, art. 40, §1º, I", "ajuda": "Somente catálogo de fabricante, com URL e data de consulta (RN-04).", "marcador": "especificacao", "colunas": [ { "id": "item", "rotulo": "Item", "tipo": "texto", "obrigatorio": true }, { "id": "especificacao", "rotulo": "Especificação", "tipo": "texto", "obrigatorio": true }, { "id": "fonte", "rotulo": "Fabricante", "tipo": "texto", "obrigatorio": true }, { "id": "url", "rotulo": "URL do catálogo", "tipo": "url", "obrigatorio": true }, { "id": "data", "rotulo": "Consulta em", "tipo": "data", "obrigatorio": true } ] },
+        { "id": "recebimento", "ref": "art. 40, §1º, II", "rotulo": "Locais de entrega e regras de recebimento", "tipo": "texto_longo", "classe": "FIXO", "texto": [], "pendente": "Herda as definições das alíneas e) e f) (E3).", "fundamento": "Lei nº 14.133/2021, art. 40, §1º, II" },
+        { "id": "garantia", "ref": "art. 40, §1º, III", "rotulo": "Garantia, manutenção e assistência técnica", "tipo": "texto_longo", "classe": "HERDADO", "origem": "etp.requisitos_especificos", "obrigatorio": true, "fundamento": "Lei nº 14.133/2021, art. 40, §1º, III", "marcador": "garantia" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,291 @@
+{
+  "artefato": "dfd",
+  "versao": "2.0",
+  "titulo": "Documento de Formalização da Demanda",
+  "sigla": "DFD",
+  "fundamento": "Decreto nº 10.947/2022, art. 8º",
+  "modelo": "modelos/DFD.docx",
+  "arquivo_saida": "DFD_{id}.docx",
+  "resumo": "O DFD tem oito informações obrigatórias (art. 8º, I a VIII). O documento só é validado com todas elas.",
+  "secoes": [
+    {
+      "id": "capa",
+      "titulo": "Capa",
+      "campos": [
+        {
+          "id": "capa",
+          "ref": "Capa",
+          "rotulo": "Cabeçalho institucional",
+          "tipo": "texto_longo",
+          "classe": "FIXO",
+          "texto": [
+            "SIMS",
+            "Secretaria de Infraestrutura, Manutenção e Serviços",
+            "FORMALIZAÇÃO DE DEMANDA",
+            "Criação de Projeto de Contratação",
+            "Vitória/ES"
+          ],
+          "ajuda": "O ano corrente é incluído automaticamente na geração do documento."
+        },
+        {
+          "id": "titulo",
+          "ref": "Capa",
+          "rotulo": "Título do projeto de contratação",
+          "tipo": "texto",
+          "classe": "HERDADO",
+          "origem": "contratacao.objeto",
+          "obrigatorio": true,
+          "formato": "maiusculas",
+          "marcador": "titulo"
+        }
+      ]
+    },
+    {
+      "id": "caracterizacao",
+      "titulo": "1. Caracterização da demanda",
+      "campos": [
+        {
+          "id": "justificativa",
+          "ref": "art. 8º, I",
+          "rotulo": "Justificativa da necessidade",
+          "tipo": "texto_longo",
+          "classe": "USUARIO",
+          "obrigatorio": true,
+          "fundamento": "Decreto nº 10.947/2022, art. 8º, I",
+          "ajuda": "Descreva o problema prático a resolver e as consequências de não contratar. Cada linha vira um parágrafo do documento.",
+          "marcador": "justificativa"
+        },
+        {
+          "id": "objeto",
+          "ref": "art. 8º, II",
+          "rotulo": "Descrição sucinta do objeto",
+          "tipo": "texto_longo",
+          "classe": "USUARIO",
+          "obrigatorio": true,
+          "fundamento": "Decreto nº 10.947/2022, art. 8º, II",
+          "ajuda": "O que se pretende contratar, em poucas linhas. A especificação técnica fica para o Termo de Referência.",
+          "marcador": "objeto"
+        },
+        {
+          "id": "itens",
+          "ref": "art. 8º, III",
+          "rotulo": "Quantidade a ser contratada",
+          "tipo": "tabela",
+          "classe": "USUARIO",
+          "obrigatorio": true,
+          "min_linhas": 1,
+          "fundamento": "Decreto nº 10.947/2022, art. 8º, III",
+          "ajuda": "Uma linha por item. Considere a expectativa de consumo anual, quando aplicável. Estes itens seguem para o ETP e o TR.",
+          "marcador": "itens",
+          "colunas": [
+            { "id": "descricao", "rotulo": "Descrição do item", "tipo": "texto", "obrigatorio": true },
+            { "id": "unidade", "rotulo": "Unidade", "tipo": "texto", "obrigatorio": true, "largura": "curto" },
+            { "id": "quantidade", "rotulo": "Quantidade", "tipo": "numero", "obrigatorio": true, "positivo": true }
+          ]
+        },
+        {
+          "id": "quantidade_memoria",
+          "ref": "art. 8º, III",
+          "rotulo": "Como a quantidade foi estimada",
+          "tipo": "texto_longo",
+          "classe": "USUARIO",
+          "obrigatorio": false,
+          "fundamento": "Decreto nº 10.947/2022, art. 8º, III",
+          "ajuda": "Opcional no DFD. A memória de cálculo completa é exigida no ETP (art. 18, §1º, IV).",
+          "marcador": "quantidade_memoria"
+        },
+        {
+          "id": "valor_estimado",
+          "ref": "art. 8º, IV",
+          "rotulo": "Estimativa preliminar do valor",
+          "tipo": "moeda",
+          "classe": "USUARIO",
+          "obrigatorio": true,
+          "positivo": true,
+          "fundamento": "Decreto nº 10.947/2022, art. 8º, IV",
+          "ajuda": "Valor total aproximado, por procedimento simplificado. Não aciona busca externa. O valor definitivo é apurado no ETP (inciso VI) e no TR (alínea i).",
+          "marcador": "valor_estimado"
+        },
+        {
+          "id": "valor_base",
+          "ref": "art. 8º, IV",
+          "rotulo": "Base da estimativa",
+          "tipo": "texto_longo",
+          "classe": "USUARIO",
+          "obrigatorio": true,
+          "fundamento": "Decreto nº 10.947/2022, art. 8º, IV",
+          "ajuda": "Como o valor foi estimado. Ex.: consulta simplificada de mercado, contratação anterior, catálogo.",
+          "marcador": "valor_base"
+        }
+      ]
+    },
+    {
+      "id": "previsao",
+      "titulo": "2. Previsão de contratação",
+      "campos": [
+        {
+          "id": "data_conclusao",
+          "ref": "art. 8º, V",
+          "rotulo": "Data pretendida para a conclusão da contratação",
+          "tipo": "data",
+          "classe": "USUARIO",
+          "obrigatorio": true,
+          "fundamento": "Decreto nº 10.947/2022, art. 8º, V",
+          "ajuda": "Data em que a contratação precisa estar concluída para não haver prejuízo ou descontinuidade das atividades.",
+          "marcador": "data_conclusao"
+        }
+      ]
+    },
+    {
+      "id": "prioridade",
+      "titulo": "3. Grau de prioridade",
+      "campos": [
+        {
+          "id": "prioridade",
+          "ref": "art. 8º, VI",
+          "rotulo": "Grau de prioridade",
+          "tipo": "selecao",
+          "classe": "USUARIO",
+          "obrigatorio": true,
+          "opcoes": ["Alto", "Médio", "Baixo"],
+          "fundamento": "Decreto nº 10.947/2022, art. 8º, VI",
+          "ajuda": "Se o grau for Alto, a justificativa de criticidade é obrigatória.",
+          "marcador": "prioridade"
+        },
+        {
+          "id": "prioridade_justificativa",
+          "ref": "art. 8º, VI",
+          "rotulo": "Justificativa do grau de prioridade",
+          "tipo": "texto_longo",
+          "classe": "USUARIO",
+          "obrigatorio": { "se": { "campo": "prioridade", "igual": "Alto" } },
+          "fundamento": "Decreto nº 10.947/2022, art. 8º, VI",
+          "ajuda": "Obrigatória quando o grau é Alto.",
+          "marcador": "prioridade_justificativa"
+        }
+      ]
+    },
+    {
+      "id": "vinculacao",
+      "titulo": "4. Vinculação ou dependência com outro DFD",
+      "campos": [
+        {
+          "id": "vinculacao",
+          "ref": "art. 8º, VII",
+          "rotulo": "Vinculação ou dependência com o objeto de outro DFD",
+          "tipo": "selecao",
+          "classe": "USUARIO",
+          "obrigatorio": true,
+          "opcoes": [
+            "Não há vinculação ou dependência com o objeto de outro documento de formalização de demanda",
+            "Há vinculação ou dependência com o objeto de outro documento de formalização de demanda"
+          ],
+          "fundamento": "Decreto nº 10.947/2022, art. 8º, VII",
+          "ajuda": "Serve para definir a ordem das contratações. Contratos vigentes relacionados são tratados no ETP (art. 18, §1º, XI).",
+          "marcador": "vinculacao"
+        },
+        {
+          "id": "vinculacao_descricao",
+          "ref": "art. 8º, VII",
+          "rotulo": "Descrição da vinculação ou observações",
+          "tipo": "texto_longo",
+          "classe": "USUARIO",
+          "obrigatorio": { "se": { "campo": "vinculacao", "igual": "Há vinculação ou dependência com o objeto de outro documento de formalização de demanda" } },
+          "fundamento": "Decreto nº 10.947/2022, art. 8º, VII",
+          "ajuda": "Obrigatória quando há vinculação: indique o outro DFD e a ordem de execução.",
+          "marcador": "vinculacao_descricao"
+        }
+      ]
+    },
+    {
+      "id": "responsaveis",
+      "titulo": "5. Responsáveis",
+      "campos": [
+        {
+          "id": "unidade",
+          "ref": "art. 8º, VIII",
+          "rotulo": "Área requisitante",
+          "tipo": "texto",
+          "classe": "HERDADO",
+          "origem": "contratacao.unidade_descricao",
+          "obrigatorio": true,
+          "fundamento": "Decreto nº 10.947/2022, art. 8º, VIII",
+          "marcador": "unidade"
+        },
+        {
+          "id": "responsavel",
+          "ref": "art. 8º, VIII",
+          "rotulo": "Responsável técnico indicado",
+          "tipo": "texto",
+          "classe": "HERDADO",
+          "origem": "contratacao.responsavel",
+          "obrigatorio": true,
+          "fundamento": "Decreto nº 10.947/2022, art. 8º, VIII",
+          "marcador": "responsavel"
+        },
+        {
+          "id": "equipe",
+          "ref": "art. 8º, VIII",
+          "rotulo": "Participação na equipe de planejamento",
+          "tipo": "texto",
+          "classe": "USUARIO",
+          "obrigatorio": false,
+          "fundamento": "Decreto nº 10.947/2022, art. 8º, VIII",
+          "ajuda": "Opcional. Completa a frase \"com a participação … na equipe de planejamento\". Ex.: da coordenadora da CPROJ.",
+          "marcador": "equipe"
+        }
+      ]
+    },
+    {
+      "id": "solicitacao",
+      "titulo": "6. Solicitação de formalização de demanda",
+      "campos": [
+        {
+          "id": "declaracao",
+          "ref": "Declaração",
+          "rotulo": "Ausência de sobreposição e solicitação",
+          "tipo": "texto_longo",
+          "classe": "FIXO",
+          "texto": [
+            "Atesto ter sido verificada lista de projetos cadastrados nas demais coordenadorias da SIMS e na própria Secretaria, concluindo não haver incompatibilidade ou sobreposição de objetos para a contratação aqui pretendida.",
+            "Solicito o reconhecimento, formalização da demanda acima caracterizada e autorização de criação de projeto de contratação a ser planejada pelo responsável indicado."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "formalizacao",
+      "titulo": "7. Formalização da demanda",
+      "campos": [
+        {
+          "id": "aprovacao",
+          "ref": "Aprovação",
+          "rotulo": "Autorização da demanda",
+          "tipo": "texto_longo",
+          "classe": "FIXO",
+          "texto": [
+            "Considerando as informações aqui prestadas, conclui-se demonstrada necessidade e caracterizada demanda, justificando empenho de esforços ao planejamento de contratação para atendimento.",
+            "Fica autorizada a formalização de demanda na forma de criação de projeto para planejamento da contratação pretendida.",
+            "Aprova-se a indicação do(s) responsável(is) pelo planejamento, ficando a substituição de responsáveis a critério do Coordenador da área responsável pelo projeto."
+          ]
+        },
+        {
+          "id": "assinaturas",
+          "ref": "Assinaturas",
+          "rotulo": "Autoridades que assinam",
+          "tipo": "tabela",
+          "classe": "HERDADO",
+          "origem": "contratacao.autoridades",
+          "obrigatorio": true,
+          "min_linhas": 1,
+          "marcador": "assinaturas",
+          "colunas": [
+            { "id": "nome", "rotulo": "Nome", "tipo": "texto" },
+            { "id": "cargo", "rotulo": "Cargo", "tipo": "texto", "obrigatorio": true },
+            { "id": "lotacao", "rotulo": "Lotação", "tipo": "texto" }
+          ]
+        }
+      ]
+    }
+  ]
+}

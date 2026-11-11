@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PCA · Planejamento de Contratações Assistido</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="css/app.css?v=e1">
+</head>
+<body>
+
+<header class="top wrap">
+  <div class="top-in">
+    <div class="brand"><b>PCA · Planejamento de Contratações Assistido</b><span>TRT da 17ª Região · SIMS · Versão 1: aquisição de materiais</span></div>
+    <div class="top-side">
+      <span class="save" id="save" role="status" aria-live="polite" hidden></span>
+      <span class="flag">Protótipo · entrega E1 · só dados públicos ou anonimizados</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="shell solo" id="shell">
+    <nav class="steps" id="steps" aria-label="Etapas da contratação" hidden></nav>
+    <div>
+      <div id="conflito" hidden style="margin-bottom:16px"></div>
+      <main id="main"><div class="sheet"><p class="note">Carregando…</p></div></main>
+    </div>
+  </div>
+</div>
+
+<footer class="base">PCA, protótipo. Os dados ficam apenas neste navegador e nos arquivos que você exportar. Código e modelos: <a href="https://github.com/AugustoSeixas/pca-demo">github.com/AugustoSeixas/pca-demo</a>.</footer>
+
+<noscript><p style="padding:24px">Esta página precisa de JavaScript.</p></noscript>
+
+<!-- Bibliotecas copiadas no repositório, com versão fixa (licenças em vendor/LICENCAS.md) -->
+<script src="vendor/pizzip-3.3.0.min.js"></script>
+<script src="vendor/docxtemplater-3.71.1.min.js"></script>
+<script src="js/pca-util.js?v=e1"></script>
+<script src="js/pca-regras.js?v=e1"></script>
+<script src="js/pca-store.js?v=e1"></script>
+<script src="js/pca-motor.js?v=e1"></script>
+<script src="js/pca-docx.js?v=e1"></script>
+<script src="js/pca-app.js?v=e1"></script>
+</body>
+</html>

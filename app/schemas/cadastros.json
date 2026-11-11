@@ -1,0 +1,20 @@
+{
+  "versao": "1.0",
+  "observacao": "Listas de apoio usadas pelos campos de identificação. Este arquivo não traz nomes de pessoas: nomes são digitados por quem usa e ficam apenas no navegador e no estado.json. A lista de unidades e os cargos devem ser confirmados com o coordenador (o DFD assinado de 2025 grafa CMPROJ no cabeçalho e CPROJ na assinatura; adotou-se CPROJ).",
+  "orgao": {
+    "nome": "Tribunal Regional do Trabalho da 17ª Região",
+    "sigla": "TRT 17ª Região",
+    "secretaria": "Secretaria de Infraestrutura, Manutenção e Serviços",
+    "secretaria_sigla": "SIMS",
+    "cidade": "Vitória/ES"
+  },
+  "unidades": [
+    { "sigla": "CPROJ", "nome": "Coordenadoria de Projetos" },
+    { "sigla": "CMOPE", "nome": "Coordenadoria de Manutenção e Operações" },
+    { "sigla": "SIMS", "nome": "Secretaria de Infraestrutura, Manutenção e Serviços" }
+  ],
+  "autoridades_padrao": [
+    { "nome": "", "cargo": "Secretário(a)", "lotacao": "SIMS / TRT 17ª Região" },
+    { "nome": "", "cargo": "Coordenador(a)", "lotacao": "{unidade} / SIMS" }
+  ]
+}
