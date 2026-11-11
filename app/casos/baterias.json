@@ -1,0 +1,40 @@
+{
+  "id": "baterias",
+  "titulo": "Caso de referência: baterias e ventiladores dos nobreaks (2025)",
+  "descricao": "Dados do DFD assinado de 2025 (PROJ CPROJ 02/2025), anonimizados. Nomes de servidores e número do processo foram omitidos.",
+  "procedencia": [
+    "Incisos I, VI e VIII: texto do DFD real de 2025.",
+    "Inciso II (objeto): adaptado do item \"3) Solução\" do DFD real. O item \"2) descrição da demanda\" do documento real não foi aproveitado.",
+    "Inciso III (quantidade): ausente no DFD real; preenchido com as quantidades do ETP real (292 baterias). O DFD real não informa a quantidade de ventiladores.",
+    "Inciso IV (estimativa preliminar): ausente no DFD real; valor aproximado, na ordem de grandeza do ETP real (R$ 107.117,20).",
+    "Inciso V (data): o DFD real indica o mês de julho de 2025; adotou-se o último dia do mês.",
+    "Inciso VII (vinculação): ausente no DFD real; preenchido para teste. A observação sobre o contrato de manutenção vem do ETP real (item 22)."
+  ],
+  "identificacao": {
+    "objeto": "Baterias e ventiladores para os nobreaks de automação e do Datacenter do Ed. Sede",
+    "processo_sei": "",
+    "unidade": "CPROJ",
+    "responsavel": "[nome omitido]",
+    "autoridades": [
+      { "nome": "", "cargo": "Secretário", "lotacao": "SIMS / TRT 17ª Região" },
+      { "nome": "", "cargo": "Coordenadora", "lotacao": "CPROJ / SIMS" }
+    ]
+  },
+  "dfd": {
+    "justificativa": "Considerando o tempo de vida útil dos nobreaks e das baterias e dos ventiladores atualmente instalados, em operação desde 2020 quando foram instalados no ed. sede, torna-se essencial realizar procedimento de substituição das baterias após 5 anos, recomendado pelos fabricantes, cuja vida útil está comprometida, de modo a garantir a continuidade do fornecimento de energia ininterrupta aos sistemas críticos.\nO comprometimento da vida útil das baterias pode acarretar falhas no fornecimento de energia em casos de queda de energia elétrica, colocando em risco a integridade dos dados e sistemas essenciais do Ed. Sede.\nA substituição das baterias, bem como, dos ventiladores é imprescindível para assegurar a confiabilidade do Datacenter, dos sistemas de automação e prevenir eventuais danos aos equipamentos em caso de falha elétrica.",
+    "objeto": "Substituição de todas as baterias existentes e ventiladores dos nobreaks de 40 KVA e 60 KVA, responsáveis pela alimentação ininterrupta do Datacenter e dos sistemas de automação do Ed. Sede, respectivamente, por novas peças de mesmas especificações técnicas e conforme as recomendações do fabricante.",
+    "itens": [
+      { "descricao": "Bateria 12 V 580 W para nobreak de 40 kVA", "unidade": "un", "quantidade": 256 },
+      { "descricao": "Bateria 12 V 200 W para nobreak de 60 kVA", "unidade": "un", "quantidade": 36 }
+    ],
+    "quantidade_memoria": "292 baterias: 36 unidades de 12 V 200 W (um nobreak de 60 kVA) e 256 unidades de 12 V 580 W (dois nobreaks de 40 kVA, com 128 cada).",
+    "valor_estimado": 110000,
+    "valor_base": "Consulta simplificada de mercado.",
+    "data_conclusao": "2025-07-31",
+    "prioridade": "Alto",
+    "prioridade_justificativa": "Diante da motivação apresentada acerca da necessidade de realização do procedimento, especialmente pelo prazo de vida útil de peças/equipamentos, e recomendação pelos fabricantes de substituição, visando manter a integridade da operação e implicações nos sistemas críticos, que são diretamente responsáveis pelo funcionamento do edifício e, consequentemente, por proporcionar a prestação jurisdicional.",
+    "vinculacao": "Não há vinculação ou dependência com o objeto de outro documento de formalização de demanda",
+    "vinculacao_descricao": "Relaciona-se ao contrato vigente de manutenção dos nobreaks, cuja contratada fará a substituição e a instalação das baterias (tratado no ETP, inciso XI).",
+    "equipe": "da coordenadora da CPROJ"
+  }
+}

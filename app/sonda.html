@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PCA · Sondagem técnica</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="css/app.css?v=e1">
+<style>
+  .t-ok{color:var(--ok);font-weight:600} .t-bad{color:var(--bad);font-weight:600} .t-warn{color:var(--warn);font-weight:600} .t-run{color:var(--muted)}
+  td.det{font-size:13px;word-break:break-word}
+  #relatorio{font-family:var(--f-mono);font-size:12.5px;min-height:280px}
+  .grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+  .grade label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header class="top wrap">
+  <div class="top-in">
+    <div class="brand"><b>PCA · Sondagem técnica</b><span>Verifica, a partir deste navegador e desta rede, o que o protótipo precisa alcançar</span></div>
+    <div class="top-side"><a class="btn small" href="index.html">← Aplicação</a></div>
+  </div>
+</header>
+
+<div class="wrap"><div class="shell solo"><main>
+  <div class="sheet">
+    <div class="eyebrow">Entrega E1 · recalibração de 13/11</div>
+    <h2>O que esta página testa</h2>
+    <p class="lede">Dois blocos. O primeiro não pede chave e serve também para a máquina do Tribunal: mostra se a rede alcança o GitHub Pages, o PNCP, o Groq e o Gemini, e se o navegador grava dados e baixa um .docx. O segundo usa as chaves gratuitas e mede se a redação e as buscas funcionam chamadas direto do navegador.</p>
+    <div class="sec" style="margin-top:16px">
+      <div class="callout info"><b class="t">Ao terminar:</b><div>use <b>Copiar relatório</b>, no fim da página, e cole o texto na conversa do Projeto. O relatório não contém as chaves.</div></div>
+    </div>
+
+    <div class="sec"><h3>1. Testes sem chave</h3>
+      <div class="row"><button class="btn primary" id="rodar-a">Rodar os testes sem chave</button><button class="btn" id="baixar-docx" disabled>Baixar o .docx de teste</button></div>
+      <div class="tbl-wrap"><table><thead><tr><th>Teste</th><th>Resultado</th><th>Detalhe</th></tr></thead><tbody id="tb-a"></tbody></table></div>
+      <p class="note">Depois de baixar o .docx de teste, abra-o no Word e marque abaixo o que aconteceu.</p>
+      <div class="row"><label class="note" for="docx-abriu">O .docx de teste abriu no Word?</label>
+        <select id="docx-abriu"><option value="">Não verifiquei</option><option>Abriu sem erro</option><option>Abriu com aviso ou reparo</option><option>Não abriu</option><option>O download foi bloqueado</option></select></div>
+    </div>
+
+    <div class="sec"><h3>2. Testes com as chaves gratuitas</h3>
+      <div class="callout warn"><b class="t">Chaves:</b><div>digite-as aqui, nunca na conversa. Elas ficam só na memória desta página, não são gravadas e somem ao fechar a aba. Cada chave é enviada apenas ao próprio provedor (api.groq.com ou generativelanguage.googleapis.com).</div></div>
+      <div class="grade">
+        <label>Chave do Groq (GroqCloud → API Keys)<input type="password" id="k-groq" autocomplete="off" spellcheck="false" placeholder="gsk_…"></label>
+        <label>Chave do Gemini (Google AI Studio → Get API key)<input type="password" id="k-gemini" autocomplete="off" spellcheck="false" placeholder="AIza…"></label>
+      </div>
+      <div class="grade">
+        <label>Pergunta do teste de busca<input type="text" id="q-busca" value="Qual é a tensão nominal e a capacidade da bateria CSB HRL 12200W? Indique a página consultada."></label>
+        <label>Domínio do fabricante (filtro do Groq)<input type="text" id="q-dominio" value="csb-battery.com"></label>
+        <label>Modelo do Gemini para busca no Google<input type="text" id="m-gemini" value="gemini-2.5-flash"></label>
+      </div>
+      <div class="row"><button class="btn primary" id="rodar-b">Rodar os testes com chave</button><span class="note">Consome cerca de 3 requisições de cada cota diária.</span></div>
+      <div class="tbl-wrap"><table><thead><tr><th>Teste</th><th>Resultado</th><th>Detalhe</th></tr></thead><tbody id="tb-b"></tbody></table></div>
+    </div>
+
+    <div class="sec"><h3>3. Relatório</h3>
+      <textarea id="relatorio" readonly aria-label="Relatório da sondagem"></textarea>
+      <div class="row"><button class="btn primary" id="copiar">Copiar relatório</button><button class="btn" id="baixar-txt">Baixar relatório (.txt)</button><span class="note" id="copiado" role="status"></span></div>
+    </div>
+  </div>
+</main></div></div>
+
+<script src="vendor/pizzip-3.3.0.min.js"></script>
+<script src="vendor/docxtemplater-3.71.1.min.js"></script>
+<script src="js/pca-util.js?v=e1"></script>
+<script src="js/pca-regras.js?v=e1"></script>
+<script src="js/pca-docx.js?v=e1"></script>
+<script>
+(function () {
+  "use strict";
+  const U = PCA.util, X = PCA.docx;
+  const $ = (s) => document.querySelector(s);
+  const resultados = { a: [], b: [] };
+  let docxTeste = null;
+
+  const segredos = () => [$("#k-groq").value.trim(), $("#k-gemini").value.trim()].filter((k) => k.length >= 8);
+  /* Nenhum texto exibido ou copiado pode conter uma chave. */
+  const limpar = (t) => segredos().reduce((s, k) => s.split(k).join("[chave]"), String(t == null ? "" : t));
+  const curto = (t, n) => { t = limpar(t).replace(/\s+/g, " ").trim(); return t.length > (n || 300) ? t.slice(0, n || 300) + "…" : t; };
+
+  async function chamar(url, opts, limiteMs) {
+    const ctl = new AbortController();
+    const t0 = performance.now();
+    const timer = setTimeout(() => ctl.abort(), limiteMs || 30000);
+    try {
+      const r = await fetch(url, Object.assign({ signal: ctl.signal, cache: "no-store" }, opts || {}));
+      const texto = await r.text();
+      let json = null;
+      try { json = JSON.parse(texto); } catch (_) {}
+      return { ok: r.ok, status: r.status, ms: Math.round(performance.now() - t0), texto, json, cabecalhos: r.headers };
+    } catch (e) {
+      return { ok: false, status: 0, ms: Math.round(performance.now() - t0), erro: e.name === "AbortError" ? "tempo esgotado" : (e.message || String(e)) };
+    } finally { clearTimeout(timer); }
+  }
+  /* Quando a chamada normal falha sem resposta, distingue "rede não alcança" de "servidor recusa páginas de outro domínio (CORS)". */
+  async function alcancavel(url) {
+    try { await fetch(url, { mode: "no-cors", cache: "no-store" }); return true; } catch (_) { return false; }
+  }
+
+  function linha(bloco, id, nome) {
+    const tb = $("#tb-" + bloco);
+    let tr = document.getElementById("r-" + id);
+    if (!tr) { tr = document.createElement("tr"); tr.id = "r-" + id; tr.innerHTML = `<td>${U.esc(nome)}</td><td class="res"></td><td class="det"></td>`; tb.appendChild(tr); }
+    return tr;
+  }
+  function registrar(bloco, id, nome, situacao, detalhe) {
+    const tr = linha(bloco, id, nome);
+    const cls = { OK: "t-ok", FALHOU: "t-bad", ATENÇÃO: "t-warn", "…": "t-run" }[situacao] || "";
+    tr.querySelector(".res").innerHTML = `<span class="${cls}">${U.esc(situacao)}</span>`;
+    tr.querySelector(".det").textContent = limpar(detalhe || "");
+    if (situacao !== "…") {
+      const lista = resultados[bloco];
+      const i = lista.findIndex((x) => x.id === id);
+      const item = { id, nome, situacao, detalhe: limpar(detalhe || "") };
+      if (i >= 0) lista[i] = item; else lista.push(item);
+      montarRelatorio();
+    }
+  }
+  const andamento = (bloco, id, nome) => registrar(bloco, id, nome, "…", "em andamento");
+
+  function montarRelatorio() {
+    const L = [];
+    L.push("PCA — RELATÓRIO DA SONDAGEM TÉCNICA");
+    L.push("Data e hora: " + U.dataHoraBR(U.agoraISO()));
+    L.push("Página: " + location.origin + location.pathname);
+    L.push("Navegador: " + navigator.userAgent);
+    L.push("Rede: " + (navigator.onLine ? "conectado" : "sem conexão") + " · idioma " + navigator.language);
+    L.push("");
+    L.push("1. SEM CHAVE");
+    if (!resultados.a.length) L.push("  (não executado)");
+    resultados.a.forEach((r) => L.push(`  [${r.situacao}] ${r.nome}: ${r.detalhe}`));
+    L.push("  .docx de teste no Word: " + ($("#docx-abriu").value || "não verificado"));
+    L.push("");
+    L.push("2. COM CHAVE");
+    if (!resultados.b.length) L.push("  (não executado)");
+    resultados.b.forEach((r) => L.push(`  [${r.situacao}] ${r.nome}: ${r.detalhe}`));
+    $("#relatorio").value = limpar(L.join("\n"));
+  }
+
+  /* ---------- bloco 1: sem chave ---------- */
+  const aaaammdd = (d) => `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
+
+  async function blocoA() {
+    $("#rodar-a").disabled = true;
+    resultados.a = [];
+    $("#tb-a").innerHTML = "";
+
+    andamento("a", "pages", "GitHub Pages (arquivos do aplicativo)");
+    let r = await chamar("schemas/dfd.json");
+    registrar("a", "pages", "GitHub Pages (arquivos do aplicativo)", r.ok && r.json ? "OK" : "FALHOU", r.ok ? `HTTP ${r.status} em ${r.ms} ms; schema do DFD versão ${r.json && r.json.versao}` : `HTTP ${r.status} ${r.erro || ""}`);
+
+    andamento("a", "local", "Gravação no navegador (localStorage)");
+    try {
+      const k = "pca.v1.sonda", v = String(Date.now());
+      localStorage.setItem(k, v);
+      const lido = localStorage.getItem(k);
+      localStorage.removeItem(k);
+      registrar("a", "local", "Gravação no navegador (localStorage)", lido === v ? "OK" : "FALHOU", lido === v ? "grava e lê" : "valor lido difere do gravado");
+    } catch (e) { registrar("a", "local", "Gravação no navegador (localStorage)", "FALHOU", e.message || String(e)); }
+
+    andamento("a", "docx", "Geração de .docx no navegador");
+    try {
+      const rm = await fetch("modelos/DFD.docx", { cache: "no-store" });
+      if (!rm.ok) throw new Error("modelo: HTTP " + rm.status);
+      const res = X.preencher(await rm.arrayBuffer(), {
+        id: "TESTE", revisao: 0, ano: String(new Date().getFullYear()), gerado_em: U.dataHoraBR(U.agoraISO()), tem_processo_sei: false, unidade_sigla: "SONDA",
+        titulo: "DOCUMENTO DE TESTE DA SONDAGEM", justificativa: ["Parágrafo de teste, com acentuação: ação, média, órgão, à, ü."], objeto: ["Objeto de teste."],
+        itens: [{ n: 1, descricao: "Item de teste", unidade: "un", quantidade: "1" }], quantidade_memoria: [], valor_estimado: "R$ 1,00", valor_base: ["Teste."],
+        data_conclusao_extenso: U.dataExtenso(U.agoraISO().slice(0, 10)), prioridade: "Baixo", prioridade_justificativa: [], vinculacao: "Teste", vinculacao_descricao: [],
+        unidade: "Teste", responsavel: "Teste", tem_equipe: false, assinaturas: [{ nome: "", cargo: "Teste", lotacao: "" }]
+      });
+      docxTeste = res.blob;
+      $("#baixar-docx").disabled = false;
+      registrar("a", "docx", "Geração de .docx no navegador", res.remanescentes.length ? "ATENÇÃO" : "OK", `arquivo de ${res.blob.size} bytes gerado${res.remanescentes.length ? "; marcadores sem valor: " + res.remanescentes.join(" ") : ""}`);
+    } catch (e) { registrar("a", "docx", "Geração de .docx no navegador", "FALHOU", e.message || String(e)); }
+
+    /* PNCP: API de consulta (documentada) */
+    andamento("a", "pncp1", "PNCP · API de consulta (contratações publicadas)");
+    const hoje = new Date(), antes = new Date(Date.now() - 3 * 864e5);
+    const u1 = `https://pncp.gov.br/api/consulta/v1/contratacoes/publicacao?dataInicial=${aaaammdd(antes)}&dataFinal=${aaaammdd(hoje)}&codigoModalidadeContratacao=6&pagina=1&tamanhoPagina=10`;
+    r = await chamar(u1);
+    let compra = null;
+    if (r.ok && r.json && Array.isArray(r.json.data) && r.json.data.length) {
+      compra = r.json.data[0];
+      registrar("a", "pncp1", "PNCP · API de consulta (contratações publicadas)", "OK", `HTTP ${r.status} em ${r.ms} ms; ${r.json.totalRegistros} pregões eletrônicos nos últimos 3 dias`);
+    } else if (r.status) registrar("a", "pncp1", "PNCP · API de consulta (contratações publicadas)", r.ok ? "ATENÇÃO" : "FALHOU", `HTTP ${r.status} em ${r.ms} ms; ${curto(r.texto, 160)}`);
+    else registrar("a", "pncp1", "PNCP · API de consulta (contratações publicadas)", "FALHOU", `sem resposta (${r.erro}); servidor ${(await alcancavel(u1)) ? "alcançável, mas a resposta foi bloqueada para esta página" : "inalcançável nesta rede"}`);
+
+    andamento("a", "pncp2", "PNCP · itens e preços de uma contratação");
+    if (compra) {
+      const cnpj = compra.orgaoEntidade && compra.orgaoEntidade.cnpj;
+      const u2 = `https://pncp.gov.br/api/pncp/v1/orgaos/${cnpj}/compras/${compra.anoCompra}/${compra.sequencialCompra}/itens?pagina=1&tamanhoPagina=10`;
+      r = await chamar(u2);
+      if (r.ok && Array.isArray(r.json) && r.json.length) {
+        const it = r.json[0];
+        registrar("a", "pncp2", "PNCP · itens e preços de uma contratação", "OK", `HTTP ${r.status} em ${r.ms} ms; ${r.json.length} itens; exemplo: "${curto(it.descricao, 70)}", valor unitário estimado ${U.moeda(it.valorUnitarioEstimado)} (${compra.numeroControlePNCP})`);
+      } else registrar("a", "pncp2", "PNCP · itens e preços de uma contratação", "FALHOU", `HTTP ${r.status} ${r.erro || curto(r.texto, 160)}`);
+    } else registrar("a", "pncp2", "PNCP · itens e preços de uma contratação", "ATENÇÃO", "não executado: depende do teste anterior");
+
+    /* PNCP: busca textual do portal (não documentada; inconclusiva na sondagem de 11/11) */
+    andamento("a", "pncp3", "PNCP · busca textual do portal (/api/search/)");
+    const u3 = "https://pncp.gov.br/api/search/?q=" + encodeURIComponent("bateria nobreak") + "&tipos_documento=edital&ordenacao=-data&pagina=1&tam_pagina=10&status=todos";
+    r = await chamar(u3, null, 40000);
+    if (r.ok && r.json) {
+      const itens = r.json.items || r.json.data || [];
+      const ex = itens[0] ? curto(itens[0].title || itens[0].description || itens[0].objetoCompra || JSON.stringify(itens[0]), 90) : "nenhum";
+      registrar("a", "pncp3", "PNCP · busca textual do portal (/api/search/)", itens.length ? "OK" : "ATENÇÃO", `HTTP ${r.status} em ${r.ms} ms; total ${r.json.total != null ? r.json.total : "?"}; ${itens.length} resultados nesta página; exemplo: "${ex}"; campos: ${itens[0] ? Object.keys(itens[0]).slice(0, 12).join(", ") : "—"}`);
+    } else if (r.status) registrar("a", "pncp3", "PNCP · busca textual do portal (/api/search/)", "FALHOU", `HTTP ${r.status} em ${r.ms} ms; ${curto(r.texto, 160)}`);
+    else registrar("a", "pncp3", "PNCP · busca textual do portal (/api/search/)", "FALHOU", `sem resposta (${r.erro}); servidor ${(await alcancavel(u3)) ? "alcançável, mas não autoriza chamadas desta página (CORS)" : "inalcançável nesta rede"}`);
+
+    /* Provedores de IA: só alcance, sem chave */
+    andamento("a", "groq0", "Groq · alcance da API (sem chave)");
+    r = await chamar("https://api.groq.com/openai/v1/models");
+    registrar("a", "groq0", "Groq · alcance da API (sem chave)", r.status === 401 || r.ok ? "OK" : "FALHOU", r.status ? `HTTP ${r.status} em ${r.ms} ms${r.status === 401 ? " (recusa esperada por falta de chave: a API está acessível)" : ""}` : `sem resposta (${r.erro}); servidor ${(await alcancavel("https://api.groq.com/openai/v1/models")) ? "alcançável, mas bloqueado para esta página" : "inalcançável nesta rede"}`);
+
+    andamento("a", "gem0", "Gemini · alcance da API (sem chave)");
+    r = await chamar("https://generativelanguage.googleapis.com/v1beta/models");
+    registrar("a", "gem0", "Gemini · alcance da API (sem chave)", r.status === 403 || r.status === 401 || r.status === 400 || r.ok ? "OK" : "FALHOU", r.status ? `HTTP ${r.status} em ${r.ms} ms${r.ok ? "" : " (recusa esperada por falta de chave: a API está acessível)"}` : `sem resposta (${r.erro}); servidor ${(await alcancavel("https://generativelanguage.googleapis.com/v1beta/models")) ? "alcançável, mas bloqueado para esta página" : "inalcançável nesta rede"}`);
+
+    $("#rodar-a").disabled = false;
+  }
+
+  /* ---------- bloco 2: com chave ---------- */
+  const erroApi = (r) => (r.status ? `HTTP ${r.status} em ${r.ms} ms; ${curto((r.json && r.json.error && (r.json.error.message || JSON.stringify(r.json.error))) || r.texto, 260)}` : `sem resposta (${r.erro})`);
+
+  async function testesGroq(chave) {
+    const H = { Authorization: "Bearer " + chave, "Content-Type": "application/json" };
+    const base = "https://api.groq.com/openai/v1";
+
+    andamento("b", "groq1", "Groq · modelos disponíveis para a chave");
+    let r = await chamar(base + "/models", { headers: H });
+    let ids = [];
+    if (r.ok && r.json && Array.isArray(r.json.data)) {
+      ids = r.json.data.map((m) => m.id).sort();
+      registrar("b", "groq1", "Groq · modelos disponíveis para a chave", "OK", `HTTP ${r.status} em ${r.ms} ms; ${ids.length} modelos: ${ids.join(", ")}`);
+    } else { registrar("b", "groq1", "Groq · modelos disponíveis para a chave", "FALHOU", erroApi(r)); return; }
+
+    const texto = ["llama-3.3-70b-versatile"].find((m) => ids.includes(m)) || ids.find((m) => /llama/i.test(m) && !/guard|whisper|tts/i.test(m)) || ids.find((m) => !/whisper|tts|guard|compound/i.test(m));
+    andamento("b", "groq2", "Groq · redação (modelo de texto)");
+    if (texto) {
+      r = await chamar(base + "/chat/completions", { method: "POST", headers: H, body: JSON.stringify({ model: texto, temperature: 0, max_tokens: 60, messages: [{ role: "user", content: "Reescreva em uma frase formal, sem acrescentar fatos: as baterias dos nobreaks têm cinco anos e precisam ser trocadas." }] }) });
+      if (r.ok && r.json && r.json.choices) {
+        const u = r.json.usage || {};
+        registrar("b", "groq2", "Groq · redação (modelo de texto)", "OK", `modelo ${texto}; HTTP ${r.status} em ${r.ms} ms; tokens ${u.prompt_tokens || "?"}+${u.completion_tokens || "?"}; resposta: "${curto(r.json.choices[0].message.content, 200)}"`);
+      } else registrar("b", "groq2", "Groq · redação (modelo de texto)", "FALHOU", `modelo ${texto}; ${erroApi(r)}`);
+    } else registrar("b", "groq2", "Groq · redação (modelo de texto)", "ATENÇÃO", "nenhum modelo de texto reconhecido na lista");
+
+    const composto = ["groq/compound", "groq/compound-mini"].find((m) => ids.includes(m)) || ids.find((m) => /compound/i.test(m));
+    andamento("b", "groq3", "Groq · busca na web com filtro de domínio");
+    if (composto) {
+      const dominio = $("#q-dominio").value.trim().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+      const corpo = { model: composto, messages: [{ role: "user", content: $("#q-busca").value.trim() }] };
+      if (dominio) corpo.search_settings = { include_domains: [dominio, "*." + dominio] };
+      r = await chamar(base + "/chat/completions", { method: "POST", headers: H, body: JSON.stringify(corpo) }, 90000);
+      if (r.ok && r.json && r.json.choices) {
+        const msg = r.json.choices[0].message || {};
+        const ferr = msg.executed_tools || [];
+        const achados = ferr.flatMap((f) => { const sr = f.search_results; return Array.isArray(sr) ? sr : (sr && sr.results) || []; });
+        const urls = achados.map((a) => a.url).filter(Boolean);
+        const fora = dominio ? urls.filter((u) => { try { const h = new URL(u).hostname; return !(h === dominio || h.endsWith("." + dominio)); } catch (_) { return true; } }) : [];
+        registrar("b", "groq3", "Groq · busca na web com filtro de domínio", urls.length && !fora.length ? "OK" : "ATENÇÃO",
+          `modelo ${composto}; HTTP ${r.status} em ${r.ms} ms; ferramentas executadas: ${ferr.length} (${ferr.map((f) => f.type).join(", ") || "nenhuma"}); ${urls.length} URLs devolvidas, ${fora.length} fora de ${dominio || "(sem filtro)"}; URLs: ${urls.slice(0, 6).join(" | ") || "nenhuma"}; resposta: "${curto(msg.content, 260)}"`);
+      } else registrar("b", "groq3", "Groq · busca na web com filtro de domínio", "FALHOU", `modelo ${composto}; ${erroApi(r)}`);
+    } else registrar("b", "groq3", "Groq · busca na web com filtro de domínio", "FALHOU", "a chave não lista nenhum sistema compound (busca na web indisponível)");
+  }
+
+  async function testesGemini(chave) {
+    const H = { "x-goog-api-key": chave, "Content-Type": "application/json" };
+    const base = "https://generativelanguage.googleapis.com/v1beta";
+
+    andamento("b", "gem1", "Gemini · modelos disponíveis para a chave");
+    let r = await chamar(base + "/models?pageSize=200", { headers: H });
+    let nomes = [];
+    if (r.ok && r.json && Array.isArray(r.json.models)) {
+      nomes = r.json.models.filter((m) => (m.supportedGenerationMethods || []).includes("generateContent")).map((m) => m.name.replace(/^models\//, ""));
+      const flash = nomes.filter((n) => /flash/i.test(n) && !/image|tts|audio|live/i.test(n));
+      registrar("b", "gem1", "Gemini · modelos disponíveis para a chave", "OK", `HTTP ${r.status} em ${r.ms} ms; ${nomes.length} modelos de texto; família Flash: ${flash.join(", ") || "nenhum"}`);
+    } else { registrar("b", "gem1", "Gemini · modelos disponíveis para a chave", "FALHOU", erroApi(r)); return; }
+
+    const escolhido = $("#m-gemini").value.trim() || "gemini-2.5-flash";
+    const candidatos = [escolhido, "gemini-2.5-flash", "gemini-2.5-flash-lite"].filter((v, i, a) => v && a.indexOf(v) === i);
+
+    andamento("b", "gem2", "Gemini · redação");
+    let feito = false, tentativas = [];
+    for (const m of candidatos) {
+      r = await chamar(`${base}/models/${encodeURIComponent(m)}:generateContent`, { method: "POST", headers: H, body: JSON.stringify({ contents: [{ parts: [{ text: "Reescreva em uma frase formal, sem acrescentar fatos: as baterias dos nobreaks têm cinco anos e precisam ser trocadas." }] }], generationConfig: { temperature: 0 } }) }, 60000);
+      const txt = r.ok && r.json && r.json.candidates && r.json.candidates[0] && r.json.candidates[0].content && (r.json.candidates[0].content.parts || []).map((p) => p.text || "").join("");
+      if (txt) { registrar("b", "gem2", "Gemini · redação", "OK", `modelo ${m}; HTTP ${r.status} em ${r.ms} ms; resposta: "${curto(txt, 200)}"`); feito = true; break; }
+      tentativas.push(`${m}: ${erroApi(r)}`);
+    }
+    if (!feito) registrar("b", "gem2", "Gemini · redação", "FALHOU", tentativas.join(" || "));
+
+    andamento("b", "gem3", "Gemini · busca no Google (grounding)");
+    feito = false; tentativas = [];
+    for (const m of candidatos) {
+      r = await chamar(`${base}/models/${encodeURIComponent(m)}:generateContent`, { method: "POST", headers: H, body: JSON.stringify({ contents: [{ parts: [{ text: $("#q-busca").value.trim() }] }], tools: [{ google_search: {} }] }) }, 90000);
+      const cand = r.ok && r.json && r.json.candidates && r.json.candidates[0];
+      if (cand) {
+        const gm = cand.groundingMetadata || {};
+        const fontes = (gm.groundingChunks || []).map((c) => c.web).filter(Boolean);
+        const txt = ((cand.content && cand.content.parts) || []).map((p) => p.text || "").join("");
+        registrar("b", "gem3", "Gemini · busca no Google (grounding)", fontes.length ? "OK" : "ATENÇÃO",
+          `modelo ${m}; HTTP ${r.status} em ${r.ms} ms; consultas: ${(gm.webSearchQueries || []).join(" | ") || "nenhuma"}; ${fontes.length} fontes: ${fontes.slice(0, 6).map((f) => f.title).join(" | ") || "nenhuma"}; primeiro link: ${fontes[0] ? curto(fontes[0].uri, 120) : "—"}; resposta: "${curto(txt, 260)}"`);
+        feito = true; break;
+      }
+      tentativas.push(`${m}: ${erroApi(r)}`);
+    }
+    if (!feito) registrar("b", "gem3", "Gemini · busca no Google (grounding)", "FALHOU", tentativas.join(" || "));
+  }
+
+  async function blocoB() {
+    const kg = $("#k-groq").value.trim(), km = $("#k-gemini").value.trim();
+    resultados.b = [];
+    $("#tb-b").innerHTML = "";
+    if (!kg && !km) { registrar("b", "sem", "Chaves", "ATENÇÃO", "nenhuma chave informada"); return; }
+    $("#rodar-b").disabled = true;
+    if (kg) await testesGroq(kg); else registrar("b", "groq1", "Groq", "ATENÇÃO", "chave não informada: testes do Groq não executados");
+    if (km) await testesGemini(km); else registrar("b", "gem1", "Gemini", "ATENÇÃO", "chave não informada: testes do Gemini não executados");
+    $("#rodar-b").disabled = false;
+  }
+
+  $("#rodar-a").addEventListener("click", blocoA);
+  $("#rodar-b").addEventListener("click", blocoB);
+  $("#baixar-docx").addEventListener("click", () => { if (docxTeste) X.baixar(docxTeste, "PCA_teste_sondagem.docx"); });
+  $("#docx-abriu").addEventListener("change", montarRelatorio);
+  $("#copiar").addEventListener("click", async () => {
+    const t = $("#relatorio");
+    try { await navigator.clipboard.writeText(t.value); $("#copiado").textContent = "Relatório copiado."; }
+    catch (_) { t.select(); $("#copiado").textContent = "Selecione o texto e copie com Ctrl+C."; }
+  });
+  $("#baixar-txt").addEventListener("click", () => X.baixar(new Blob([$("#relatorio").value], { type: "text/plain;charset=utf-8" }), "PCA_sondagem.txt"));
+  montarRelatorio();
+})();
+</script>
+</body>
+</html>

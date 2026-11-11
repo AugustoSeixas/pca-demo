@@ -1,0 +1,55 @@
+{
+  "artefato": "etp",
+  "versao": "2.0-rascunho",
+  "situacao": "Campos conforme a especificação funcional v2. Textos fixos, colunas finais das tabelas de busca e modelo Word entram na entrega E2.",
+  "titulo": "Estudo Técnico Preliminar",
+  "sigla": "ETP",
+  "fundamento": "Lei nº 14.133/2021, art. 18, §§ 1º e 2º",
+  "modelo": "modelos/ETP.docx",
+  "arquivo_saida": "ETP_{id}.docx",
+  "modos": {
+    "completo": "Os 13 incisos do art. 18, §1º",
+    "simplificado": "Mínimo do art. 18, §2º: incisos I, IV, VI, VIII e XIII, com justificativa dos ausentes"
+  },
+  "secoes": [
+    {
+      "id": "identificacao",
+      "titulo": "Identificação",
+      "campos": [
+        { "id": "processo", "ref": "Identificação", "rotulo": "Processo SEI", "tipo": "texto", "classe": "HERDADO", "origem": "contratacao.processo_sei", "obrigatorio": false, "marcador": "processo_sei" },
+        { "id": "unidade", "ref": "Identificação", "rotulo": "Área requisitante", "tipo": "texto", "classe": "HERDADO", "origem": "contratacao.unidade_descricao", "obrigatorio": true, "marcador": "unidade" },
+        { "id": "responsavel", "ref": "Identificação", "rotulo": "Responsável técnico", "tipo": "texto", "classe": "HERDADO", "origem": "contratacao.responsavel", "obrigatorio": true, "marcador": "responsavel" }
+      ]
+    },
+    {
+      "id": "i_a_v",
+      "titulo": "Incisos I a V",
+      "campos": [
+        { "id": "necessidade", "ref": "art. 18, §1º, I", "rotulo": "Descrição da necessidade", "tipo": "texto_longo", "classe": "HERDADO", "origem": "dfd.justificativa", "obrigatorio": { "completo": true, "simplificado": true }, "fundamento": "Lei nº 14.133/2021, art. 18, §1º, I", "marcador": "necessidade" },
+        { "id": "pca_previsao", "ref": "art. 18, §1º, II", "rotulo": "Previsão no plano de contratações anual", "tipo": "selecao", "classe": "USUARIO", "opcoes": ["Prevista no plano de contratações anual", "Não prevista no plano de contratações anual"], "obrigatorio": { "completo": true, "simplificado": false }, "fundamento": "Lei nº 14.133/2021, art. 18, §1º, II", "marcador": "pca_previsao" },
+        { "id": "pca_referencia", "ref": "art. 18, §1º, II", "rotulo": "Referência no plano ou justificativa da ausência", "tipo": "texto_longo", "classe": "USUARIO", "obrigatorio": { "completo": true, "simplificado": false }, "fundamento": "Lei nº 14.133/2021, art. 18, §1º, II", "ajuda": "Exercício, página e item do plano; se não constar, a justificativa.", "marcador": "pca_referencia" },
+        { "id": "requisitos_padrao", "ref": "art. 18, §1º, III", "rotulo": "Requisitos gerais da contratação", "tipo": "texto_longo", "classe": "FIXO", "texto": [], "pendente": "Texto fixo a definir com o modelo Word (E2).", "fundamento": "Lei nº 14.133/2021, art. 18, §1º, III" },
+        { "id": "requisitos_especificos", "ref": "art. 18, §1º, III", "rotulo": "Requisitos específicos", "tipo": "texto_longo", "classe": "USUARIO", "obrigatorio": { "completo": true, "simplificado": false }, "fundamento": "Lei nº 14.133/2021, art. 18, §1º, III", "ajuda": "Ex.: certificações, normas ambientais, garantia mínima.", "marcador": "requisitos_especificos" },
+        { "id": "itens", "ref": "art. 18, §1º, IV", "rotulo": "Estimativa das quantidades", "tipo": "tabela", "classe": "HERDADO", "origem": "dfd.itens", "obrigatorio": { "completo": true, "simplificado": true }, "fundamento": "Lei nº 14.133/2021, art. 18, §1º, IV", "marcador": "itens", "colunas": [ { "id": "descricao", "rotulo": "Descrição do item", "tipo": "texto" }, { "id": "unidade", "rotulo": "Unidade", "tipo": "texto" }, { "id": "quantidade", "rotulo": "Quantidade", "tipo": "numero" } ] },
+        { "id": "memoria_calculo", "ref": "art. 18, §1º, IV", "rotulo": "Memória de cálculo das quantidades", "tipo": "texto_longo", "classe": "REDIGIDO", "obrigatorio": { "completo": true, "simplificado": true }, "fundamento": "Lei nº 14.133/2021, art. 18, §1º, IV", "ajuda": "Na Camada 2, a IA propõe a redação a partir das quantidades já informadas, sem fato novo.", "marcador": "memoria_calculo" },
+        { "id": "alternativas", "ref": "art. 18, §1º, V", "rotulo": "Levantamento de mercado: alternativas", "tipo": "tabela", "classe": "BUSCA", "min_linhas": 2, "obrigatorio": { "completo": true, "simplificado": false }, "fundamento": "Lei nº 14.133/2021, art. 18, §1º, V", "ajuda": "Cada alternativa com fonte, URL e data de consulta (RN-04).", "marcador": "alternativas", "colunas": [ { "id": "alternativa", "rotulo": "Alternativa", "tipo": "texto", "obrigatorio": true }, { "id": "descricao", "rotulo": "Vantagens e limitações", "tipo": "texto", "obrigatorio": true }, { "id": "fonte", "rotulo": "Fonte", "tipo": "texto", "obrigatorio": true }, { "id": "url", "rotulo": "URL", "tipo": "url", "obrigatorio": true }, { "id": "data", "rotulo": "Consulta em", "tipo": "data", "obrigatorio": true } ] },
+        { "id": "solucao_adotada", "ref": "art. 18, §1º, V", "rotulo": "Alternativa adotada", "tipo": "texto", "classe": "USUARIO", "obrigatorio": { "completo": true, "simplificado": false }, "fundamento": "Lei nº 14.133/2021, art. 18, §1º, V", "marcador": "solucao_adotada" }
+      ]
+    },
+    {
+      "id": "vi_a_xiii",
+      "titulo": "Incisos VI a XIII",
+      "campos": [
+        { "id": "cotacoes", "ref": "art. 18, §1º, VI", "rotulo": "Estimativa do valor: cotações", "tipo": "tabela", "classe": "BUSCA", "min_linhas": 1, "obrigatorio": { "completo": true, "simplificado": true }, "fundamento": "Lei nº 14.133/2021, art. 18, §1º, VI", "ajuda": "Cascata: PNCP, banco de preços, lojas especializadas. Padrão do projeto: cinco preços por item (RN-07).", "marcador": "cotacoes", "colunas": [ { "id": "item", "rotulo": "Item", "tipo": "texto", "obrigatorio": true }, { "id": "nivel", "rotulo": "Nível da cascata", "tipo": "selecao", "opcoes": ["PNCP", "Banco de preços", "Loja especializada", "Fornecedor"], "obrigatorio": true }, { "id": "fonte", "rotulo": "Fonte", "tipo": "texto", "obrigatorio": true }, { "id": "url", "rotulo": "URL", "tipo": "url", "obrigatorio": true }, { "id": "data", "rotulo": "Data do preço", "tipo": "data", "obrigatorio": true }, { "id": "valor", "rotulo": "Preço unitário", "tipo": "moeda", "obrigatorio": true, "positivo": true }, { "id": "usar", "rotulo": "Considerar", "tipo": "selecao", "opcoes": ["Sim", "Não"], "obrigatorio": true } ] },
+        { "id": "descricao_solucao", "ref": "art. 18, §1º, VII", "rotulo": "Descrição da solução como um todo", "tipo": "texto_longo", "classe": "REDIGIDO", "obrigatorio": { "completo": true, "simplificado": false }, "fundamento": "Lei nº 14.133/2021, art. 18, §1º, VII", "marcador": "descricao_solucao" },
+        { "id": "parcelamento", "ref": "art. 18, §1º, VIII", "rotulo": "Parcelamento da contratação", "tipo": "selecao", "classe": "USUARIO", "opcoes": ["Não parcelar (lote único)", "Parcelar"], "obrigatorio": { "completo": true, "simplificado": true }, "fundamento": "Lei nº 14.133/2021, art. 18, §1º, VIII", "marcador": "parcelamento" },
+        { "id": "parcelamento_justificativa", "ref": "art. 18, §1º, VIII", "rotulo": "Justificativa do parcelamento ou não", "tipo": "texto_longo", "classe": "USUARIO", "obrigatorio": { "completo": true, "simplificado": true }, "fundamento": "Lei nº 14.133/2021, art. 18, §1º, VIII", "marcador": "parcelamento_justificativa" },
+        { "id": "resultados", "ref": "art. 18, §1º, IX", "rotulo": "Demonstrativo dos resultados pretendidos", "tipo": "texto_longo", "classe": "REDIGIDO", "obrigatorio": { "completo": true, "simplificado": false }, "fundamento": "Lei nº 14.133/2021, art. 18, §1º, IX", "marcador": "resultados" },
+        { "id": "providencias", "ref": "art. 18, §1º, X", "rotulo": "Providências prévias à celebração do contrato", "tipo": "texto_longo", "classe": "USUARIO", "obrigatorio": { "completo": true, "simplificado": false }, "fundamento": "Lei nº 14.133/2021, art. 18, §1º, X", "marcador": "providencias" },
+        { "id": "correlatas", "ref": "art. 18, §1º, XI", "rotulo": "Contratações correlatas e/ou interdependentes", "tipo": "texto_longo", "classe": "USUARIO", "obrigatorio": { "completo": true, "simplificado": false }, "fundamento": "Lei nº 14.133/2021, art. 18, §1º, XI", "marcador": "correlatas" },
+        { "id": "impactos", "ref": "art. 18, §1º, XII", "rotulo": "Impactos ambientais e medidas mitigadoras", "tipo": "texto_longo", "classe": "USUARIO", "obrigatorio": { "completo": true, "simplificado": false }, "fundamento": "Lei nº 14.133/2021, art. 18, §1º, XII", "marcador": "impactos" },
+        { "id": "conclusao", "ref": "art. 18, §1º, XIII", "rotulo": "Posicionamento conclusivo sobre a adequação da contratação", "tipo": "texto_longo", "classe": "USUARIO", "obrigatorio": { "completo": true, "simplificado": true }, "fundamento": "Lei nº 14.133/2021, art. 18, §1º, XIII", "ajuda": "A especificação v2 classifica este campo como FIXO; o texto padrão será definido com o modelo Word (E2).", "marcador": "conclusao" }
+      ]
+    }
+  ]
+}

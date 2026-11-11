@@ -1,0 +1,72 @@
+{
+  "artefato": "identificacao",
+  "versao": "2.0",
+  "titulo": "Identificação da contratação",
+  "fundamento": "Especificação de Trabalho de 28/09/2026, RN-11",
+  "secoes": [
+    {
+      "id": "contratacao",
+      "titulo": "Contratação",
+      "campos": [
+        {
+          "id": "objeto",
+          "rotulo": "Objeto resumido",
+          "tipo": "texto",
+          "classe": "USUARIO",
+          "obrigatorio": true,
+          "ajuda": "Nome curto da contratação. Identifica a contratação na lista e vai para a capa do DFD, em maiúsculas.",
+          "marcador": "titulo"
+        },
+        {
+          "id": "processo_sei",
+          "rotulo": "Número do processo SEI",
+          "tipo": "texto",
+          "classe": "USUARIO",
+          "obrigatorio": false,
+          "ajuda": "Opcional. Pode ser informado depois.",
+          "marcador": "processo_sei"
+        },
+        {
+          "id": "unidade",
+          "rotulo": "Área requisitante",
+          "tipo": "selecao",
+          "classe": "USUARIO",
+          "obrigatorio": true,
+          "opcoes_de": "unidades",
+          "ajuda": "Unidade da SIMS que pede a contratação. A lista vem de schemas/cadastros.json.",
+          "marcador": "unidade_sigla"
+        },
+        {
+          "id": "responsavel",
+          "rotulo": "Responsável técnico indicado",
+          "tipo": "texto",
+          "classe": "USUARIO",
+          "obrigatorio": true,
+          "ajuda": "Nome do servidor que será o autor da solução, das especificações e do planejamento. Fica gravado só neste navegador e no estado.json.",
+          "marcador": "responsavel"
+        }
+      ]
+    },
+    {
+      "id": "assinaturas",
+      "titulo": "Autoridades que assinam",
+      "campos": [
+        {
+          "id": "autoridades",
+          "rotulo": "Bloco de assinaturas",
+          "tipo": "tabela",
+          "classe": "USUARIO",
+          "obrigatorio": true,
+          "min_linhas": 1,
+          "ajuda": "Uma linha por pessoa que assina. O nome pode ficar em branco se a assinatura for feita no SEI; o cargo é obrigatório.",
+          "marcador": "assinaturas",
+          "colunas": [
+            { "id": "nome", "rotulo": "Nome", "tipo": "texto" },
+            { "id": "cargo", "rotulo": "Cargo", "tipo": "texto", "obrigatorio": true },
+            { "id": "lotacao", "rotulo": "Lotação", "tipo": "texto" }
+          ]
+        }
+      ]
+    }
+  ]
+}
